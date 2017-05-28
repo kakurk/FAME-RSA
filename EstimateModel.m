@@ -14,12 +14,12 @@ function [] = EstimateModel()
 % current analysis is in, and the directoy which houses the behavioral
 % data.
 
-Analysis.name = 'Name_of_Model_hrf';
-Analysis.dir  = fullfile('/path/to/analyses/directory/', Analysis.name);
+Analysis.name = 'FAMEret8';
+Analysis.dir  = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models', Analysis.name);
 
-Func.dir         = '/path/to/functional/directory';
-Func.wildcard    = '^swa.*\.nii';
-Func.motwildcard = '^rp_.*\.txt';
+Func.dir         = '/gpfs/group/nad12/default/nad12/FAME8/Func_ret';
+Func.wildcard    = '^wa.*\.nii';
+Func.motwildcard = '^rp_r.*\.txt';
 
 Mask.on   = 0;
 Mask.dir  = 'path\to\mask\directory';
@@ -29,12 +29,14 @@ Mask.name = 'name_of_mask.img';
 
 % Please list the subjects to model in a 1 x N cell array.
 
-Subjects = { 'y001' 'y002' 'y003' 'y004' 'y005' ...
-             'o001' 'o002' 'o003' 'o004' 'o005' }';
+Subjects       = { '18y404'  '20y297'  '20y415'  '20y441'  '20y455' ... 
+                   '21y437'  '21y534'  '23y452'  '25y543'  '18y566' ... 
+                   '20y396'  '20y439'  '20y444'  '21y299'  '21y521' ...
+                   '22y422'  '23y546' }';
 
 % Please list the runs for the model in a 1 x N cell array.
          
-Runs = { 'run1' 'run2' 'run3' 'run4' };
+Runs = { 'run1' 'run2' 'run3' 'run4' 'run5' 'run6' };
 
 % User Input Step 3: Model Specifics
 
@@ -54,8 +56,8 @@ Model.TR    = 2;
 % SPM parameters in the GUI and go directly to running of the one
 % sample t-tests
 
-show          = 1; % 0 = input as multiple conditions file, 1 = input parameters for showing in GUI
-jobman_option = 'interactive'; % interactive = show in GUI, run = run through SPM
+show          = 0; % 0 = input as multiple conditions file, 1 = input parameters for showing in GUI
+jobman_option = 'run'; % interactive = show in GUI, run = run through SPM
     
     
 %% Routine
