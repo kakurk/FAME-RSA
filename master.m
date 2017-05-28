@@ -3,6 +3,8 @@
 % Written by Kyle Kurkela, kyleakurkela@gmail.com
 % May-June, 2017
 
+run('/storage/home/kak53/Downloads/set_kyle_mail_prefrences.m')
+
 runSpec = true;
 runEst  = true;
 runST   = true;
