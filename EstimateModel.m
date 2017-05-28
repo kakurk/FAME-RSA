@@ -18,8 +18,8 @@ Analysis.name = 'FAMEret8';
 Analysis.dir  = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models', Analysis.name);
 
 Func.dir         = '/gpfs/group/nad12/default/nad12/FAME8/Func_ret';
-Func.wildcard    = '^wa.*\.nii';
-Func.motwildcard = '^rp_r.*\.txt';
+Func.wildcard    = '^wa.*\.img';
+Func.motwildcard = '^rp_[^a].*\.txt';
 
 Mask.on   = 0;
 Mask.dir  = 'path\to\mask\directory';
@@ -99,7 +99,7 @@ for curSub = 1:length(Subjects)
     for i = 1:NumOfRuns
         fprintf('Run: %d\n', i)
         curFuncDir              = fullfile(Func.dir, Subjects{curSub}, Runs{i});
-        Model.runs{i}.scans     = cellstr(spm_select('ExtFPList', curFuncDir, Func.wildcard, Inf));
+        Model.runs{i}.scans     = cellstr(spm_select('FPList', curFuncDir, Func.wildcard));
         Model.runs{i}.multicond = fullfile(Model.directory, SpecModelMats{i});        % from Model Spec
         Model.runs{i}.motion    = spm_select('FPList', curFuncDir, Func.motwildcard); % from realignment
     end
