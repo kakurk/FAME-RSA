@@ -11,7 +11,7 @@
 
 % Add CoSMoMVPA to the MATLAB search path
 if isunix % if we are on Hammer, a unix system
-    addpath(genpath('/gpfs/group/n/nad12/RSA/Scripts/CoSMoMVPA-master'))
+    addpath(genpath('/gpfs/group/nad12/default/nad12/CoSMoMVPA-master'))
 else % if not on unix, assume we are on Anvil
     addpath(genpath('S:\nad12\CoSMoMVPA-master'))
 end
@@ -32,9 +32,12 @@ cosmo_warning('off')
 %   studypath            = directory that holds the Single Trial SPM model.
 %   trialtypesOfInterest = cell array of trial types of interest for this
 %                          analysis.
-subjects             = { '18y404' '18y566'  '20y297' };
+subjects             = { '18y404'  '20y297'  '20y415'  '20y441'  '20y455' ... 
+                         '21y437'  '21y534'  '23y452'  '25y543'  '18y566' ... 
+                         '20y396'  '20y439'  '20y444'  '21y299'  '21y521' ...
+                         '22y422'  '23y546'};
 rois                 = { 'rLTG_left' };
-study_path           = '/gpfs/group/n/nad12/RSA/Analysis_ret/SingleTrialModel';
+study_path           = '/gpfs/group/nad12/default/nad12/FAME8/RSA/models/SingleTrialModel/';
 trialtypesOfInterest = { 'RecHits' 'FamHits' 'RecFAs' 'FamFAs' };
 
 %% Routine
@@ -56,7 +59,7 @@ for ss = 1:length(subjects)
  
     % Edit the SPM.mat file to use paths here on Hammer
     if isunix % only execute if we are on a Unix system (i.e., Hammer)
-        spm_changepath(fullfile(study_path, subjects{ss}, 'SPM.mat'), 'S:\nad12\FAME8', '/gpfs/group/n/nad12/RSA')
+        spm_changepath(fullfile(study_path, subjects{ss}, 'SPM.mat'), 'S:\nad12\FAME8', '/gpfs/group/nad12/default/nad12/FAME8')
         spm_changepath(fullfile(study_path, subjects{ss}, 'SPM.mat'), '\', '/')
     end
     
