@@ -18,17 +18,19 @@ function [] = SpecifyModel()
 % current analysis is in, and the directoy which houses the behavioral
 % data.
 
-Analysis.name             = 'Name_Of_Model_hrf';
-Analysis.directory        = fullfile('/path/to/analysis/directory', Analysis.name);
-Analysis.behav.directory  = '/path/to/behavioral/data/directory';
+Analysis.name             = 'FAMEret8';
+Analysis.directory        = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models', Analysis.name);
+Analysis.behav.directory  = '/gpfs/group/nad12/default/nad12/FAME8/Behav';
 
 
 % User Input Step 2: Subjects
 
 % Please list the subjects to model in a 1 x N cell array.
 
-Subjects       = { 'y001' 'y002' 'y003' 'y004' 'y005' ...
-                   'o001' 'o002' 'o003' 'o004' 'o005' };
+Subjects       = { '18y404'  '20y297'  '20y415'  '20y441'  '20y455' ... 
+                   '21y437'  '21y534'  '23y452'  '25y543'  '18y566' ... 
+                   '20y396'  '20y439'  '20y444'  '21y299'  '21y521' ...
+                   '22y422'  '23y546'};
 
 
 % User Input Step 3: Model Specifics
@@ -41,8 +43,8 @@ Subjects       = { 'y001' 'y002' 'y003' 'y004' 'y005' ...
 % - Behavioral File Regular Expression
 % - Number of Parametric Modulators
 
-Number.OfTrialTypes           = 4;
-Analysis.behav.regexp         = '.*_ENCdm.xls';
+Number.OfTrialTypes           = 11;
+Analysis.behav.regexp         = '.*ret.xls$';
 ParametricMods                = 0;
 
 %% Routine
@@ -94,7 +96,7 @@ for indexS = 1:length(Subjects)
     % The counter cell array will keep track of how many trials occur in
     % each trial type in each functional run
 
-    Number.OfRuns = max(unique(BehavData.Run));
+    Number.OfRuns = max(unique(BehavData.runID));
     counter       = zeros(Number.OfRuns, Number.OfTrialTypes);
 
     %-- Build the multiple conditions *.mat file for each run
@@ -140,10 +142,10 @@ for indexS = 1:length(Subjects)
 
                 %--record variable values for this trial
                 
-                rawonset    = BehavData.rawonset(curTrial);    % trial onset time
-                score       = BehavData.score(curTrial);       % score
-                type        = BehavData.type(curTrial);        % type
-                relatedness = BehavData.relatedness(curTrial); % relatedness para mod
+                rawonset    = BehavData.RAWONSET(curTrial)/1000; % trial onset time in seconds
+                response    = BehavData.response(curTrial);      % response, 28 = Rem, 29 = Fam, 30 = New
+                type        = BehavData.type(curTrial);          % type, 1 = target, 3 = Rel Lure, 4 = Unrel Lure
+                enctype     = BehavData.encType(curTrial);       % encType, 1 = blocked, 2 = scrambled
 
                 %--Sort Trials into Trial Type Bins
                 
@@ -151,109 +153,123 @@ for indexS = 1:length(Subjects)
                 % of which trial type number we are on
                 indexTT = 0;
 
-                % Trial Type: HighHit
+                % Trial Type: RecHits
                 indexTT = indexTT+1;
-                if  type == 0 && score == 4
+                if  type == 1 && response == 28
 
                     counter(curRun,indexTT)                     = counter(curRun,indexTT)+1;
-                    names{indexTT}                              = 'HighHit';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset/1000;
+                    names{indexTT}                              = 'RecHits';
+                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
                     durations{indexTT}(counter(curRun,indexTT)) = 0;
 
                 end
 
-                % Trial Type: LowHit
+                % Trial Type: FamHits
                 indexTT = indexTT+1;                            
-                if  type == 0 && score == 3
+                if  type == 1 && response == 29
 
                     counter(curRun,indexTT) = counter(curRun,indexTT)+1; 
-                    names{indexTT}                              = 'LowHit';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset/1000;
+                    names{indexTT}                              = 'FamHits';
+                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
                     durations{indexTT}(counter(curRun,indexTT)) = 0;
 
                 end
 
-                % Trial Type: AllMiss
+                % Trial Type: BlockedMisses
                 indexTT = indexTT+1;                            
-                if  type == 0 && (score == 2 || score == 1)
+                if  type == 1 && response == 30 && enctype == 1
 
                     counter(curRun,indexTT) = counter(curRun,indexTT)+1; 
-                    names{indexTT}                              = 'AllMiss';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset/1000;
+                    names{indexTT}                              = 'BlockedMisses';
+                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
                     durations{indexTT}(counter(curRun,indexTT)) = 0;
 
                 end
-
-                % Trial Type: AllFA
+                
+                % Trial Type: ScrambledMisses
                 indexTT = indexTT+1;                            
-                if  (type == 1 || type == 2 || type == 3 || type == 4) ...
-                        && (score == 2 || score == 1)
+                if  type == 1 && response == 30 && enctype == 2
 
-                    counter(curRun,indexTT) = counter(curRun,indexTT)+1;
-                    names{indexTT}                              = 'AllFA';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset/1000;
+                    counter(curRun,indexTT) = counter(curRun,indexTT)+1; 
+                    names{indexTT}                              = 'ScrambledMisses';
+                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
                     durations{indexTT}(counter(curRun,indexTT)) = 0;
 
-                    % Parametric Modulators for this Trial Type
-                    indexPmod = 0;
+                end
+                
+                % Trial Type: BlockedCRs
+                indexTT = indexTT+1;                            
+                if  type == 3 && response == 30 && enctype == 1
 
-                    % Parametric Modulator 1
-                    indexPmod = indexPmod + 1;
-                    pmod(indexTT).name{indexPmod}  = 'Relatedness';
-                    pmod(indexTT).param{indexPmod}(counter(curRun,indexTT)) = relatedness;
-                    pmod(indexTT).poly{indexPmod}  = 1;
+                    counter(curRun,indexTT) = counter(curRun,indexTT)+1; 
+                    names{indexTT}                              = 'BlockedCRs';
+                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
+                    durations{indexTT}(counter(curRun,indexTT)) = 0;
+
+                end
+                
+                % Trial Type: ScrambledCRs
+                indexTT = indexTT+1;                            
+                if  type == 3 && response == 30 && enctype == 2
+
+                    counter(curRun,indexTT) = counter(curRun,indexTT)+1; 
+                    names{indexTT}                              = 'ScrambledCRs';
+                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
+                    durations{indexTT}(counter(curRun,indexTT)) = 0;
+
+                end
+                
+                % Trial Type: RecFAs
+                indexTT = indexTT+1;
+                if  type == 3 && response == 28
+
+                    counter(curRun,indexTT)                     = counter(curRun,indexTT)+1;
+                    names{indexTT}                              = 'RecFAs';
+                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
+                    durations{indexTT}(counter(curRun,indexTT)) = 0;
 
                 end
 
-                % Trial Type: HiCR
-                indexTT = indexTT+1;
-                if (type == 1 || type == 2 || type == 3 || type == 4) ...
-                        && score == 4
+                % Trial Type: FamFAs
+                indexTT = indexTT+1;                            
+                if  type == 3 && response == 29
 
-                    counter(curRun,indexTT) = counter(curRun,indexTT)+1;
-                    names{indexTT}                              = 'HiCR';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset/1000;
+                    counter(curRun,indexTT) = counter(curRun,indexTT)+1; 
+                    names{indexTT}                              = 'FamFAs';
+                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
                     durations{indexTT}(counter(curRun,indexTT)) = 0;
 
-                    % Parametric Modulators for this Trial Type
-                    indexPmod = 0;
+                end
+                
+                % Trial Type: UCR
+                indexTT = indexTT+1;
+                if  type == 4 && response == 30
 
-                    % Parametric Modulator 1
-                    indexPmod = indexPmod + 1;
-                    pmod(indexTT).name{indexPmod}  = 'Relatedness';
-                    pmod(indexTT).param{indexPmod}(counter(curRun,indexTT)) = relatedness;
-                    pmod(indexTT).poly{indexPmod}  = 1;
+                    counter(curRun,indexTT)                     = counter(curRun,indexTT)+1;
+                    names{indexTT}                              = 'UCR';
+                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
+                    durations{indexTT}(counter(curRun,indexTT)) = 0;
 
                 end
 
-                % Trial Type: LoCR
-                indexTT = indexTT+1;
-                if (type == 1 || type == 2 || type == 3 || type == 4) ...
-                        && score == 3
+                % Trial Type: UFA
+                indexTT = indexTT+1;                            
+                if  type == 4 && (response == 28 || response == 29)
 
-                    counter(curRun,indexTT) = counter(curRun,indexTT)+1;
-                    names{indexTT}                              = 'LoCR';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset/1000;
+                    counter(curRun,indexTT) = counter(curRun,indexTT)+1; 
+                    names{indexTT}                              = 'UFA';
+                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
                     durations{indexTT}(counter(curRun,indexTT)) = 0;
-
-                    % Parametric Modulators for this Trial Type
-                    indexPmod = 0;
-
-                    % Parametric Modulator 1
-                    indexPmod = indexPmod + 1;
-                    pmod(indexTT).name{indexPmod}  = 'Relatedness';
-                    pmod(indexTT).param{indexPmod}(counter(curRun,indexTT)) = relatedness;
-                    pmod(indexTT).poly{indexPmod}  = 1;   
 
                 end
 
                 % Trial Type: NR
                 indexTT = indexTT+1;
-                if score == 99
+                if response == 99
 
                     counter(curRun,indexTT) = counter(curRun,indexTT)+1;
                     names{indexTT}                              = 'NR';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset/1000;
+                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
                     durations{indexTT}(counter(curRun,indexTT)) = 0;
 
                 end
