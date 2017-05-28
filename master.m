@@ -4,6 +4,7 @@
 % May-June, 2017
 
 run('/storage/home/kak53/Downloads/set_kyle_mail_prefrences.m')
+addpath(genpath('/gpfs/group/nad12/default/nad12/spm12'))
 
 runSpec = true;
 runEst  = true;
