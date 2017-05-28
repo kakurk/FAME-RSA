@@ -80,6 +80,7 @@ for indexS = 1:length(Subjects)
 
     fprintf('Reading in Subject %s ''s Behav Data ...\n\n\n\n', curSubj.name)
     BehavData     = readtable(curSubj.behavFile);
+    BehavData.Properties.VariableNames = regexprep(BehavData.Properties.VariableNames, 'x?_', '');
     Number.OfRows = height(BehavData);
 
     %-- Build path to this subjects analysis directory
@@ -133,7 +134,7 @@ for indexS = 1:length(Subjects)
             % Sort the trial types one functional run at a time
 
             % if the current trial is a part of the current run...
-            if curRun == BehavData.Run(curTrial);
+            if curRun == BehavData.runID(curTrial);
 
                 %--clean up the command window and update the user
                 clc
