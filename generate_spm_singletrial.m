@@ -42,13 +42,16 @@ function [] = generate_spm_singletrial()
 %% USER INFORMATION
 
 % Directory for the new model. If it does not exist, it will be created.
-stdir = '/gpfs/group/n/nad12/RSA/Analysis_ret/SingleTrialModel/';
+stdir    = '/gpfs/group/nad12/default/nad12/FAME8/RSA/models/SingleTrialModel/';
 
 % Directory for the existing model
-modeldir = '/gpfs/group/n/nad12/RSA/Analysis_ret/KylesFAMEret8RSA_Model/';
+modeldir = '/gpfs/group/nad12/default/nad12/FAME8/RSA/models/FAMEret8/';
 
 % Subjects to run
-subjects = {'18y404' '18y566' '20y297'};
+subjects = { '18y404'  '20y297'  '20y415'  '20y441'  '20y455' ... 
+             '21y437'  '21y534'  '23y452'  '25y543'  '18y566' ... 
+             '20y396'  '20y439'  '20y444'  '21y299'  '21y521' ...
+             '22y422'  '23y546' };
 
 % Flag for estimating model (0=no estimation, 1=estimation)
 estimate = 1;
@@ -64,7 +67,6 @@ modeltype = 1;
 % Option to discard extra files in multi-model approach to save space
 % (1=discard, 0=leave them). Always keeps regs and covs files.
 discard_mm_files = 1;
-
 
 %% MAIN CODE
 
