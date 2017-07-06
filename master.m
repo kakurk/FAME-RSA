@@ -68,8 +68,9 @@ sendmail('kyleakurkela@gmail.com', 'RSA...')
 
 try
     run_CANLAB_rsa;
-catch
+catch ME
     sendmail('kyleakurkela@gmail.com', 'Problem with RSA')
+    rethrow(ME)
 end
 
 end
