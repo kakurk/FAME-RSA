@@ -123,7 +123,7 @@ for ss = 1:length(subjects)
         % display the resulting rho matrices
 
         % create a new figure
-        figure
+        figure('Visible', 'off')
 
         % visualize the rho matrix using imagesc
         imagesc(rho);
@@ -249,7 +249,7 @@ for s = 1:length(subjects)
         % display the Average RSA matrices
 
         % create a new figure
-        figure
+        figure('Visible', 'off')
 
         % visualize the rho matrix using imagesc
         imagesc(AverageRSAmatrix);
@@ -290,7 +290,7 @@ for r = 1:length(rois)
     %% Display Results
     
     % create a new figure
-    figure
+    figure('Visible', 'off')
     
     % visualize the rho matrix using imagesc
     imagesc(AcrossSubjectsTrialTypeMatrix);
