@@ -71,10 +71,10 @@ for ss = 1:length(subjects)
     data_path  = fullfile(study_path, subjects{ss});
     spm_path   = fullfile(data_path, 'SPM.mat:beta');
 
-    for rr = 1:length(rois)
+    for r = 1:length(rois)
 
         % current ROI label
-        roi_label = rois{rr};
+        roi_label = rois{r};
 
         % full path to ROI mask
         mask_fn  = fullfile(study_path, [roi_label '.nii']);
@@ -143,7 +143,7 @@ for ss = 1:length(subjects)
 
         % title
         desc=sprintf(['Average correlations among trials for subject %s '...
-                        'in mask ''%s'''], subjects{ss}, rois{rr});
+                        'in mask ''%s'''], subjects{ss}, rois{r});
         title(desc)
 
         % colorbar
@@ -158,8 +158,8 @@ for ss = 1:length(subjects)
         xlswrite(fullfile(output_path, filename), z)
 
         %% Store result in a cell array for later calculations
-        z_all{rr}   = cat(3, z_all{rr}, z); % a nTrials x nTrials x nSubjects 3-D Matrix
-        rho_all{rr} = cat(3, rho_all{rr}, rho); % a nTrials x nTrials x nSubjects 3-D Matrix
+        z_all{r}   = cat(3, z_all{r}, z); % a nTrials x nTrials x nSubjects 3-D Matrix
+        rho_all{r} = cat(3, rho_all{r}, rho); % a nTrials x nTrials x nSubjects 3-D Matrix
         
         %% Save the MATLAB figure
         filename = [subjects{ss}, '_' roi_label '_rho_matrix.png'];
@@ -239,7 +239,7 @@ for s = 1:length(subjects)
         AverageRSAmatrix = diagnol + offdiagnol;
         
         % Save this AverageRSAmatrix in a 3-D matrix for the next section
-        AllSubjectsAverageRSAmatrix{rr} = cat(3, AllSubjectsAverageRSAmatrix{rr}, AverageRSAmatrix);
+        AllSubjectsAverageRSAmatrix{r} = cat(3, AllSubjectsAverageRSAmatrix{r}, AverageRSAmatrix);
         
         % Add this new square correlation matrix to the empty cell array we
         % initalized further up in this section
@@ -285,7 +285,7 @@ end
 for r = 1:length(rois)
     
     % Calculate mean across subjects
-    AcrossSubjectsTrialTypeMatrix = mean(AllSubjectsAverageRSAmatrix{rr}, 3);
+    AcrossSubjectsTrialTypeMatrix = mean(AllSubjectsAverageRSAmatrix{r}, 3);
     
     %% Display Results
     
