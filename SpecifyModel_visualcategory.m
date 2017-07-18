@@ -42,7 +42,7 @@ Subjects       = { '18y404'  '20y297'  '20y415'  '20y441'  '20y455' ...
 % - Behavioral File Regular Expression
 % - Number of Parametric Modulators
 
-Number.OfTrialTypes           = 11;
+Number.OfTrialTypes           = 126;
 Analysis.behav.regexp         = '.*ret.xls$';
 ParametricMods                = 0;
 
@@ -142,10 +142,9 @@ for indexS = 1:length(Subjects)
 
                 %--record variable values for this trial
                 
-                rawonset    = BehavData.RAWONSET(curTrial)/1000; % trial onset time in seconds
-                response    = BehavData.response(curTrial);      % response, 28 = Rem, 29 = Fam, 30 = New
-                type        = BehavData.type(curTrial);          % type, 1 = target, 3 = Rel Lure, 4 = Unrel Lure
-                enctype     = BehavData.encType(curTrial);       % encType, 1 = blocked, 2 = scrambled
+                rawonset     = BehavData.RAWONSET(curTrial)/1000; % trial onset time in seconds
+                catID        = BehavData.catID(curTrial); % visual category ID number
+                categoryName = regexp(BehavData.image(curTrial), '\\.*\(', 'match');
 
                 %--Sort Trials into Trial Type Bins
                 
@@ -153,124 +152,17 @@ for indexS = 1:length(Subjects)
                 % of which trial type number we are on
                 indexTT = 0;
 
-                % Trial Type: RecHits
-                indexTT = indexTT+1;
-                if  (type == 1 || type == 2) && response == 28
-
-                    counter(curRun,indexTT)                     = counter(curRun,indexTT)+1;
-                    names{indexTT}                              = 'RecHits';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
-                    durations{indexTT}(counter(curRun,indexTT)) = 0;
-
-                end
-
-                % Trial Type: FamHits
-                indexTT = indexTT+1;                            
-                if  (type == 1 || type == 2) && response == 29
-
-                    counter(curRun,indexTT) = counter(curRun,indexTT)+1; 
-                    names{indexTT}                              = 'FamHits';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
-                    durations{indexTT}(counter(curRun,indexTT)) = 0;
-
-                end
-
-                % Trial Type: BlockedMisses
-                indexTT = indexTT+1;                            
-                if  (type == 1 || type == 2) && response == 30 && enctype == 1
-
-                    counter(curRun,indexTT) = counter(curRun,indexTT)+1; 
-                    names{indexTT}                              = 'BlockedMisses';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
-                    durations{indexTT}(counter(curRun,indexTT)) = 0;
-
-                end
+                for rr = 1:max(BehavData.catID)
                 
-                % Trial Type: ScrambledMisses
-                indexTT = indexTT+1;                            
-                if  (type == 1 || type == 2) && response == 30 && enctype == 2
+                    indexTT = indexTT+1;
+                    if  catID == rr
 
-                    counter(curRun,indexTT) = counter(curRun,indexTT)+1; 
-                    names{indexTT}                              = 'ScrambledMisses';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
-                    durations{indexTT}(counter(curRun,indexTT)) = 0;
+                        counter(curRun,indexTT)                     = counter(curRun,indexTT)+1;
+                        names{indexTT}                              = categoryName;
+                        onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
+                        durations{indexTT}(counter(curRun,indexTT)) = 0;
 
-                end
-                
-                % Trial Type: BlockedCRs
-                indexTT = indexTT+1;                            
-                if  type == 3 && response == 30 && enctype == 1
-
-                    counter(curRun,indexTT) = counter(curRun,indexTT)+1; 
-                    names{indexTT}                              = 'BlockedCRs';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
-                    durations{indexTT}(counter(curRun,indexTT)) = 0;
-
-                end
-                
-                % Trial Type: ScrambledCRs
-                indexTT = indexTT+1;                            
-                if  type == 3 && response == 30 && enctype == 2
-
-                    counter(curRun,indexTT) = counter(curRun,indexTT)+1; 
-                    names{indexTT}                              = 'ScrambledCRs';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
-                    durations{indexTT}(counter(curRun,indexTT)) = 0;
-
-                end
-                
-                % Trial Type: RecFAs
-                indexTT = indexTT+1;
-                if  type == 3 && response == 28
-
-                    counter(curRun,indexTT)                     = counter(curRun,indexTT)+1;
-                    names{indexTT}                              = 'RecFAs';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
-                    durations{indexTT}(counter(curRun,indexTT)) = 0;
-
-                end
-
-                % Trial Type: FamFAs
-                indexTT = indexTT+1;                            
-                if  type == 3 && response == 29
-
-                    counter(curRun,indexTT) = counter(curRun,indexTT)+1; 
-                    names{indexTT}                              = 'FamFAs';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
-                    durations{indexTT}(counter(curRun,indexTT)) = 0;
-
-                end
-                
-                % Trial Type: UCR
-                indexTT = indexTT+1;
-                if  type == 4 && response == 30
-
-                    counter(curRun,indexTT)                     = counter(curRun,indexTT)+1;
-                    names{indexTT}                              = 'UCR';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
-                    durations{indexTT}(counter(curRun,indexTT)) = 0;
-
-                end
-
-                % Trial Type: UFA
-                indexTT = indexTT+1;                            
-                if  type == 4 && (response == 28 || response == 29)
-
-                    counter(curRun,indexTT) = counter(curRun,indexTT)+1; 
-                    names{indexTT}                              = 'UFA';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
-                    durations{indexTT}(counter(curRun,indexTT)) = 0;
-
-                end
-
-                % Trial Type: NR
-                indexTT = indexTT+1;
-                if response == 0
-
-                    counter(curRun,indexTT) = counter(curRun,indexTT)+1;
-                    names{indexTT}                              = 'NR';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
-                    durations{indexTT}(counter(curRun,indexTT)) = 0;
+                    end
 
                 end
                 
