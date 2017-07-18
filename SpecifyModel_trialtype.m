@@ -18,7 +18,7 @@ function [] = SpecifyModel()
 % current analysis is in, and the directoy which houses the behavioral
 % data.
 Analysis.name             = 'FAMEret8';
-Analysis.directory        = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models', Analysis.name);
+Analysis.directory        = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models/002_trialtype', Analysis.name);
 Analysis.behav.directory  = '/gpfs/group/nad12/default/nad12/FAME8/Behav';
 
 
