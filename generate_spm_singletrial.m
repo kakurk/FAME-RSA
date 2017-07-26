@@ -1,4 +1,4 @@
-function [] = generate_spm_singletrial()
+function [] = generate_spm_singletrial(root)
 
 % This script takes an existing SPM.mat file and converts it to a
 % single-trial SPM.mat file, where each trial is modeled as a separate
@@ -42,10 +42,10 @@ function [] = generate_spm_singletrial()
 %% USER INFORMATION
 
 % Directory for the new model. If it does not exist, it will be created.
-stdir    = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models/003_memory/', 'SingleTrialModel/');
+stdir    = fullfile(root, 'SingleTrialModel/');
 
 % Directory for the existing model
-modeldir = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models/003_memory/', 'FAMEret8/');
+modeldir = fullfile(root, 'FAMEret8/');
 
 % Subjects to run
 subjects = { '18y404'  '20y297'  '20y415'  '20y441'  '20y455' ... 

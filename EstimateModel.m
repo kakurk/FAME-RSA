@@ -1,4 +1,4 @@
-function [] = EstimateModel()
+function [] = EstimateModel(root)
 % EstimateModel     function for estimating a GLM specified using the
 %                   SpecifyModel. Allows user to display the
 %                   trial type onsets/durations in the SPM Batch GUI
@@ -15,7 +15,7 @@ function [] = EstimateModel()
 % data.
 
 Analysis.name = 'FAMEret8';
-Analysis.dir  = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models/003_memory', Analysis.name);
+Analysis.dir  = fullfile(root, Analysis.name);
 
 Func.dir         = '/gpfs/group/nad12/default/nad12/FAME8/Func_ret';
 Func.wildcard    = '^wa.*\.img';

@@ -1,7 +1,7 @@
-% The master script for the FAME RSA analsysis
+% The master script for the FAME RSA analysis
 %
 % Written by Kyle Kurkela, kyleakurkela@gmail.com
-% May-June, 2017
+% July-August, 2017
 
 run('/storage/home/kak53/Downloads/set_kyle_mail_prefrences.m')
 addpath(genpath('/gpfs/group/nad12/default/nad12/spm12'))
@@ -11,66 +11,82 @@ runEst  = true;
 runST   = true;
 runRSA  = true;
 
-%% Step 1: Specify the Model
+models  = {'001_visualcategory' '002_trialtype' '003_memory'};
 
-if runSpec
+for m = 1:lenth(models)
 
-sendmail('kyleakurkela@gmail.com', 'Specifying...')
+    root = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models', models{m});
+    
+    %% Step 1: Specify the Model
+    
+    if runSpec
 
-pause off
+        sendmail('kyleakurkela@gmail.com', 'Specifying...')
 
-try
-    SpecifyModel;
-catch
-    sendmail('kyleakurkela@gmail.com', 'Problem with Specifying')
-end
+        pause off
 
-pause on
+        try
+            if m == 1
+                SpecifyModel_visualcategory;
+            elseif m == 2
+                SpecifyModel_trialtype;
+            elseif m == 3
+                SpecifyModel_memory;
+            else
+                error('No Model Specified')
+            end
+        catch
+            sendmail('kyleakurkela@gmail.com', 'Problem with Specifying')
+        end
 
-end
+        pause on
 
-%% Step 2: Estimate Model
+    end
 
-if runEst
+    %% Step 2: Estimate Model
 
-sendmail('kyleakurkela@gmail.com', 'Estimating...')
+    if runEst
 
-try
-    EstimateModel;
-catch
-    sendmail('kyleakurkela@gmail.com', 'Problem with Estimating')
-end
+        sendmail('kyleakurkela@gmail.com', 'Estimating...')
+        
+        try
+            EstimateModel(root);
+        catch
+            sendmail('kyleakurkela@gmail.com', 'Problem with Estimating')
+        end
 
-end
+    end
 
-%% Step 3: Generate Single Trial Models
+    %% Step 3: Generate Single Trial Models
 
-if runST
+    if runST
 
-sendmail('kyleakurkela@gmail.com', 'Single Trial...')
+        sendmail('kyleakurkela@gmail.com', 'Single Trial...')
 
-try
-    generate_spm_singletrial;
-catch
-    sendmail('kyleakurkela@gmail.com', 'Problem Generating Single Trial')
-end
+        try
+            generate_spm_singletrial(root);
+        catch
+            sendmail('kyleakurkela@gmail.com', 'Problem Generating Single Trial')
+        end
 
-end
+    end
 
-%% Step 4: run RSA
+    %% Step 4: run RSA
 
-if runRSA
+    if runRSA
 
-% copy over the ROIs
-copyfile('/gpfs/group/nad12/default/nad12/FAME8/Analysis_ret/FAMEret8RSA_hrf/*.nii', '/gpfs/group/nad12/default/nad12/FAME8/RSA/models/SingleTrialModel/')
+        % copy over the ROIs
+        copyfile('/gpfs/group/nad12/default/nad12/FAME8/Analysis_ret/FAMEret8RSA_hrf/*.nii', '/gpfs/group/nad12/default/nad12/FAME8/RSA/models/SingleTrialModel/')
 
-sendmail('kyleakurkela@gmail.com', 'RSA...')
+        sendmail('kyleakurkela@gmail.com', 'RSA...')
 
-try
-    run_CANLAB_rsa;
-catch ME
-    sendmail('kyleakurkela@gmail.com', 'Problem with RSA')
-    rethrow(ME)
-end
+        try
+            run_CANLAB_rsa;
+        catch ME
+            sendmail('kyleakurkela@gmail.com', 'Problem with RSA')
+            rethrow(ME)
+        end
+
+    end
 
 end
