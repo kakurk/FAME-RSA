@@ -2,8 +2,8 @@ function compile_results()
 % function for compiling the RSA results into a single excel sheet
 
 % parameters
-rois                 = { 'rHC_left' 'rLTG_left' 'rSMA_bilat' 'rthal_bilat' };
-rsa_results_dir      = '/gpfs/group/nad12/default/nad12/FAME8/RSA/models/SingleTrialModel/RSA_Results';
+rois                 = { 'rHC_bilat' 'rLTG_bilat' 'rPHG_bilat' 'roccip_bilat' 'rSMA_bilat'};
+rsa_results_dir      = '/gpfs/group/nad12/default/nad12/FAME8/RSA/models/003_memory/SingleTrialModel/RSA_Results';
 trialtypesOfInterest = { 'RecHits' 'FamHits' 'RecFAs' 'FamFAs' };
 
 % routine
@@ -35,7 +35,7 @@ for r = 1:length(rois)
     TrialCombination     = repmat(TrialCombination, size(correlation, 1), 1);
     
     % extract the subject IDs from the RSA_matrix_filenames
-    subjectID            = regexp(RSA_matrix_filenames, '[0-9]{2}y[0-9]{3}', 'match');
+    subjectID            = regexp(RSA_matrix_filenames, '[0-9]{2}[oy][0-9]{3}', 'match');
     subjectID            = unNest_cell_array(subjectID);
     subjectID            = repelem(subjectID, 10);
     
