@@ -143,8 +143,9 @@ for indexS = 1:length(Subjects)
                 %--record variable values for this trial
                 
                 rawonset     = BehavData.RAWONSET(curTrial)/1000; % trial onset time in seconds
-                catID        = BehavData.catID(curTrial); % visual category ID number
-                categoryName = regexp(BehavData.image(curTrial), '\\.*\(', 'match');
+                catID        = BehavData.catID(curTrial);         % visual category ID number
+                categoryName = regexp(BehavData.image(curTrial), '(?<=\\)[a-z]+', 'match');
+                categoryName = strtrim(categoryName{1}{:});
 
                 %--Sort Trials into Trial Type Bins
                 
