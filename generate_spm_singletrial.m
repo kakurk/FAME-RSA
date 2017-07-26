@@ -42,16 +42,22 @@ function [] = generate_spm_singletrial()
 %% USER INFORMATION
 
 % Directory for the new model. If it does not exist, it will be created.
-stdir    = '/gpfs/group/nad12/default/nad12/FAME8/RSA/models/SingleTrialModel/';
+stdir    = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models/003_memory/', 'SingleTrialModel/');
 
 % Directory for the existing model
-modeldir = '/gpfs/group/nad12/default/nad12/FAME8/RSA/models/FAMEret8/';
+modeldir = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models/003_memory/', 'FAMEret8/');
 
 % Subjects to run
 subjects = { '18y404'  '20y297'  '20y415'  '20y441'  '20y455' ... 
              '21y437'  '21y534'  '23y452'  '25y543'  '18y566' ... 
              '20y396'  '20y439'  '20y444'  '21y299'  '21y521' ...
              '22y422'  '23y546' };
+
+%subjects = { '79o108' };% '70o118'  '80o128'  '81o125'  '76o120' ... 
+                   %'69o144'  '71o152'  '67o178'  '80o121'  '72o164' ... 
+                   %'76o162'  '73o165'  '83o197'  '71o193'  '67o136' ...
+                   %'69o277'  '75o320'  '70o316'  '81o312' ...
+                   %'67o153'  '79o117' };
 
 % Flag for estimating model (0=no estimation, 1=estimation)
 estimate = 1;

@@ -15,7 +15,7 @@ function [] = EstimateModel()
 % data.
 
 Analysis.name = 'FAMEret8';
-Analysis.dir  = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models', Analysis.name);
+Analysis.dir  = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models/003_memory', Analysis.name);
 
 Func.dir         = '/gpfs/group/nad12/default/nad12/FAME8/Func_ret';
 Func.wildcard    = '^wa.*\.img';
@@ -33,6 +33,9 @@ Subjects       = { '18y404'  '20y297'  '20y415'  '20y441'  '20y455' ...
                    '21y437'  '21y534'  '23y452'  '25y543'  '18y566' ... 
                    '20y396'  '20y439'  '20y444'  '21y299'  '21y521' ...
                    '22y422'  '23y546' }';
+
+%Subjects       = { '79o108'};%'69o277'  '75o320'  '70o316'  '81o312' ...
+                  % '67o153'  '79o117' }';
 
 % Please list the runs for the model in a 1 x N cell array.
          
