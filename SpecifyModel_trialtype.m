@@ -156,7 +156,7 @@ for indexS = 1:length(Subjects)
                 if  type == 1 || type == 2
 
                     counter(curRun,indexTT)                     = counter(curRun,indexTT)+1;
-                    names{indexTT}                              = 'RecHits';
+                    names{indexTT}                              = 'Target';
                     onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
                     durations{indexTT}(counter(curRun,indexTT)) = 0;
 
@@ -167,7 +167,7 @@ for indexS = 1:length(Subjects)
                 if  type == 3
 
                     counter(curRun,indexTT) = counter(curRun,indexTT)+1; 
-                    names{indexTT}                              = 'BlockedCRs';
+                    names{indexTT}                              = 'RelLure';
                     onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
                     durations{indexTT}(counter(curRun,indexTT)) = 0;
 
@@ -178,7 +178,7 @@ for indexS = 1:length(Subjects)
                 if  type == 4
 
                     counter(curRun,indexTT) = counter(curRun,indexTT)+1; 
-                    names{indexTT}                              = 'UFA';
+                    names{indexTT}                              = 'UnrelLure';
                     onsets{indexTT}(counter(curRun,indexTT))    = rawonset;
                     durations{indexTT}(counter(curRun,indexTT)) = 0;
 
