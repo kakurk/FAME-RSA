@@ -29,6 +29,7 @@ cosmo_warning('off')
 %   subjects             = cell array of subject IDs.
 %   rois                 = cell array of rois mask filenames. Assumes that
 %                          this ROI is in the roi_path directory.
+%   roi_path             = directory that holds the ROIs
 %   studypath            = directory that holds the Single Trial SPM model.
 %   trialtypesOfInterest = cell array of trial types of interest for this
 %                          analysis.
