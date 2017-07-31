@@ -98,8 +98,8 @@ for ss = 1:length(subjects)
     %                 :beta appended to the end tells cosmo to pull the beta 
     %                 information from the SPM.mat file.
     %   output_path = fullpath to this subject's RSA output directory
-    data_path  = fullfile(study_path, subjects{ss});
-    spm_path   = fullfile(data_path, 'SPM.mat:beta');
+    data_path   = fullfile(study_path, subjects{ss});
+    spm_path    = fullfile(data_path, 'SPM.mat:beta');
     output_path = fullfile(out_path, subjects{ss});
     
     % create the output path if it doesn't already exist
@@ -216,6 +216,10 @@ end
 AllSubjectsAverageRSAmatrix = cell(1, length(rois));
 
 for s = 1:length(subjects)
+    
+    % This subject's
+    %   output_path = fullpath to this subject's RSA output directory
+    output_path = fullfile(out_path, subjects{ss});
     
     for r = 1:length(rois)
 
@@ -346,10 +350,10 @@ for r = 1:length(rois)
     
     %% Save Group Results
     filename = [rois{r} '_averagetrialtypeRSAmatrix.xlsx'];
-    xlswrite(fullfile(output_path, filename), AverageRSAmatrix)
+    xlswrite(fullfile(out_path, filename), AverageRSAmatrix)
     
     %% Save the MATLAB figure
     filename = [rois{r} '_averagetrialtypeRSAmatrix.png'];
-    saveas(gcf, fullfile(output_path, filename))
+    saveas(gcf, fullfile(out_path, filename))
     
 end
