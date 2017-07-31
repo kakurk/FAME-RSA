@@ -28,7 +28,7 @@ cosmo_warning('off')
 % Parameters:
 %   subjects             = cell array of subject IDs.
 %   rois                 = cell array of rois mask filenames. Assumes that
-%                          this ROI is in the studypath directory.
+%                          this ROI is in the roi_path directory.
 %   studypath            = directory that holds the Single Trial SPM model.
 %   trialtypesOfInterest = cell array of trial types of interest for this
 %                          analysis.
@@ -39,6 +39,7 @@ subjects             = { '18y404'  '20y297'  '20y415'  '20y441'  '20y455' ...
 %subjects             = { '70o316'}; 
 rois                 = { 'rHC_bilat' 'rLTG_bilat' 'rPHG_bilat' 'roccip_bilat' 'rSMA_bilat'};
 study_path           = fullfile(root, 'SingleTrialModel/');
+roi_path             = '/gpfs/group/nad12/default/nad12/FAME8/RSA/ROIs';
 if m == 3
     trialtypesOfInterest = { 'RecHits' 'FamHits' 'RecFAs' 'FamFAs' };
 elseif m == 2
@@ -108,7 +109,7 @@ for ss = 1:length(subjects)
         roi_label = rois{r};
 
         % full path to ROI mask
-        mask_fn  = fullfile(study_path, [roi_label '.nii']);
+        mask_fn  = fullfile(roi_path, [roi_label '.nii']);
 
         % load beta images, utilizing cosmo_frmi_dataset's ability to extract
         % infortmation from this subject's SPM.mat
