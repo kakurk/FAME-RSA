@@ -323,6 +323,10 @@ end
 % Now that we have averaged within trial types, now we will average across
 % subjects
 
+ax_handles = zeros(length(rois), 1);
+fg_handles = zeros(length(rois), 1);
+col_limits = zeros(length(rois), 1);
+
 for r = 1:length(rois)
     
     % Calculate mean across subjects
@@ -332,6 +336,10 @@ for r = 1:length(rois)
     
     % create a new figure
     figure('Visible', 'off')
+    
+    % current axis handle
+    ax_handles(r) = gca;
+    fg_handles(r) = gcf;
     
     % visualize the rho matrix using imagesc
     imagesc(AcrossSubjectsTrialTypeMatrix);
@@ -348,12 +356,22 @@ for r = 1:length(rois)
     % colorbar
     colorbar('EastOutside');
     
+    % colorbar limits
+    col_limits(r) = get(gca, 'clim');
+    
     %% Save Group Results
     filename = [rois{r} '_averagetrialtypeRSAmatrix.xlsx'];
     xlswrite(fullfile(out_path, filename), AverageRSAmatrix)
     
-    %% Save the MATLAB figure
+end
+
+% Save the MATLAB figure for each ROI, after colorbar correction
+
+for r = 1:length(rois)
+    
+    set(ax_handles(r), 'clim', [min(col_limits(:)), max(col_limits(:))])
+    
     filename = [rois{r} '_averagetrialtypeRSAmatrix.png'];
-    saveas(gcf, fullfile(out_path, filename))
+    saveas(fg_handles(r), fullfile(out_path, filename))
     
 end
