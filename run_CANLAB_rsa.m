@@ -77,12 +77,7 @@ end
 
 % path to save results into
 parentDir   = fileparts(study_path);
-output_path = fullfile(parentDir, 'RSA_Results');
-
-% create the output path if it doesn't already exist
-if ~exist(output_path, 'dir')
-    mkdir(output_path)
-end
+out_path = fullfile(parentDir, 'RSA_Results');
 
 % initalizing cell arrays for z_all, rho_all, and trial_labels
 z_all        = cell(1,length(rois));
@@ -98,12 +93,19 @@ for ss = 1:length(subjects)
     end
     
     % This subject's:
-    %   data_path = fullpath to this subject's Single Trial Model directory
-    %   spm_path  = fullpath to this subject's SPM.mat file. Note: the
-    %   :beta appended to the end tells cosmo to pull the beta information
-    %   from the SPM.mat file.
+    %   data_path   = fullpath to this subject's Single Trial Model directory
+    %   spm_path    = fullpath to this subject's SPM.mat file. Note: the
+    %                 :beta appended to the end tells cosmo to pull the beta 
+    %                 information from the SPM.mat file.
+    %   output_path = fullpath to this subject's RSA output directory
     data_path  = fullfile(study_path, subjects{ss});
     spm_path   = fullfile(data_path, 'SPM.mat:beta');
+    output_path = fullfile(out_path, subjects{ss});
+    
+    % create the output path if it doesn't already exist
+    if ~exist(output_path, 'dir')
+        mkdir(output_path)
+    end
 
     for r = 1:length(rois)
 
