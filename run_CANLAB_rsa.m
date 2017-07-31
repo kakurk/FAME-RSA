@@ -296,7 +296,7 @@ for s = 1:length(subjects)
         imagesc(AverageRSAmatrix);
 
         % set axis labels
-        set(gca, 'xtick', 1:length(trialtypesOfInterest), 'xticklabel', trialtypesOfInterest)
+        set(gca, 'xtick', 1:length(trialtypesOfInterest), 'xticklabel', trialtypesOfInterest, 'XTickLabelRotation', 90)
         set(gca, 'ytick', 1:length(trialtypesOfInterest), 'yticklabel', trialtypesOfInterest)
 
         % title
