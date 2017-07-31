@@ -337,7 +337,7 @@ for r = 1:length(rois)
     imagesc(AcrossSubjectsTrialTypeMatrix);
     
     % set axis labels
-    set(gca, 'xtick', 1:length(trialtypesOfInterest), 'xticklabel', trialtypesOfInterest)
+    set(gca, 'xtick', 1:length(trialtypesOfInterest), 'xticklabel', trialtypesOfInterest, 'XTickLabelRotation', 90)
     set(gca, 'ytick', 1:length(trialtypesOfInterest), 'yticklabel', trialtypesOfInterest)
     
     % title
