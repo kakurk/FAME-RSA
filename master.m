@@ -75,9 +75,6 @@ for m = 1:lenth(models)
 
     if runRSA
 
-        % copy over the ROIs
-        %copyfile('/gpfs/group/nad12/default/nad12/FAME8/Analysis_ret/FAMEret8RSA_hrf/*.nii', '/gpfs/group/nad12/default/nad12/FAME8/RSA/models/SingleTrialModel/')
-
         sendmail('kyleakurkela@gmail.com', 'RSA...')
 
         try
