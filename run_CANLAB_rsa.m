@@ -77,7 +77,7 @@ end
 
 % path to save results into
 parentDir   = fileparts(study_path);
-out_path = fullfile(parentDir, 'RSA_Results');
+out_path    = fullfile(parentDir, 'RSA_Results');
 
 % initalizing cell arrays for z_all, rho_all, and trial_labels
 z_all        = cell(1,length(rois));
@@ -180,7 +180,7 @@ for ss = 1:length(subjects)
 
         % title
         desc=sprintf(['Average correlations among trials for subject %s '...
-                        'in mask ''%s'''], subjects{ss}, rois{r});
+                        'in mask ''%s'''], subjects{ss}, regexprep(rois{r}, '_', ' '));
         title(desc)
 
         % colorbar
@@ -301,7 +301,7 @@ for s = 1:length(subjects)
 
         % title
         desc=sprintf(['Average correlations among trials types for subject %s '...
-                        'in mask ''%s'''], subjects{s}, rois{r});
+                        'in mask ''%s'''], subjects{s}, regexprep(rois{r}, '_', ' '));
         title(desc)
 
         % colorbar
