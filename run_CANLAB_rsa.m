@@ -39,7 +39,7 @@ subjects             = { '18y404'  '20y297'  '20y415'  '20y441'  '20y455' ...
                          '22y422'  '23y546'};
 %subjects             = { '70o316'}; 
 rois                 = { 'rHC_bilat' 'rLTG_bilat' 'rPHG_bilat' 'roccip_bilat' 'rSMA_bilat'};
-study_path           = fullfile(root, 'SingleTrialModel/');
+study_path           = fullfile(root, 'SingleTrialModel'); % do NOT put the "/" at the end of the path name
 roi_path             = '/gpfs/group/nad12/default/nad12/FAME8/RSA/ROIs';
 if m == 3
     trialtypesOfInterest = { 'RecHits' 'FamHits' 'RecFAs' 'FamFAs' };
@@ -76,7 +76,8 @@ end
 %% Routine
 
 % path to save results into
-output_path = fullfile(study_path, 'RSA_Results');
+parentDir   = fileparts(study_path);
+output_path = fullfile(parentDir, 'RSA_Results');
 
 % create the output path if it doesn't already exist
 if ~exist(output_path, 'dir')
@@ -129,6 +130,7 @@ for ss = 1:length(subjects)
             % Remove the space and the underscore
             trial_labels{ss} = regexp(trial_labels{ss}, '[a-zA-Z]*', 'match');
             trial_labels{ss} = unNest_cell_array(trial_labels{ss});
+            
         end
 
         % cosmo_remove_useless_data removes the NaNs from the data                                 
