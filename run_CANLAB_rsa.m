@@ -84,6 +84,9 @@ z_all        = cell(1,length(rois));
 rho_all      = cell(1,length(rois));
 trial_labels = cell(1, length(subjects));
 
+% create a new figure
+figure('Visible', 'off');
+
 for ss = 1:length(subjects)
  
     % Edit the SPM.mat file to use paths here on Hammer
@@ -159,9 +162,6 @@ for ss = 1:length(subjects)
         %% Display Results
         % display the resulting rho matrices
 
-        % create a new figure
-        figure('Visible', 'off')
-
         % visualize the rho matrix using imagesc
         imagesc(rho);
 
@@ -219,7 +219,7 @@ for s = 1:length(subjects)
     
     % This subject's
     %   output_path = fullpath to this subject's RSA output directory
-    output_path = fullfile(out_path, subjects{ss});
+    output_path = fullfile(out_path, subjects{s});
     
     for r = 1:length(rois)
 
@@ -289,9 +289,6 @@ for s = 1:length(subjects)
         %% Display Results
         % display the Average RSA matrices
 
-        % create a new figure
-        figure('Visible', 'off')
-
         % visualize the rho matrix using imagesc
         imagesc(AverageRSAmatrix);
 
@@ -325,7 +322,7 @@ end
 
 ax_handles = zeros(length(rois), 1);
 fg_handles = zeros(length(rois), 1);
-col_limits = zeros(length(rois), 1);
+col_limits = zeros(length(rois), 2);
 
 for r = 1:length(rois)
     
@@ -357,7 +354,7 @@ for r = 1:length(rois)
     colorbar('EastOutside');
     
     % colorbar limits
-    col_limits(r) = get(gca, 'clim');
+    col_limits(r, :) = get(gca, 'clim');
     
     %% Save Group Results
     filename = [rois{r} '_averagetrialtypeRSAmatrix.xlsx'];
