@@ -37,10 +37,11 @@ subjects             = { '18y404'  '20y297'  '20y415'  '20y441'  '20y455' ...
                          '21y437'  '21y534'  '23y452'  '25y543'  '18y566' ... 
                          '20y396'  '20y439'  '20y444'  '21y299'  '21y521' ...
                          '22y422'  '23y546'};
-%subjects             = { '70o316'}; 
+%subjects             = { '18y404' }; 
 rois                 = { 'rHC_bilat' 'rLTG_bilat' 'rPHG_bilat' 'roccip_bilat' 'rSMA_bilat'};
 study_path           = fullfile(root, 'SingleTrialModel'); % do NOT put the "/" at the end of the path name
 roi_path             = '/gpfs/group/nad12/default/nad12/FAME8/RSA/ROIs';
+changepath_flag      = false;
 if m == 3
     trialtypesOfInterest = { 'RecHits' 'FamHits' 'RecFAs' 'FamFAs' };
 elseif m == 2
@@ -90,7 +91,7 @@ figure('Visible', 'off');
 for ss = 1:length(subjects)
  
     % Edit the SPM.mat file to use paths here on Hammer
-    if isunix % only execute if we are on a Unix system (i.e., Hammer)
+    if isunix && changepath_flag % only execute if we are on a Unix system (i.e., Hammer) && flag is set to true
         spm_changepath(fullfile(study_path, subjects{ss}, 'SPM.mat'), 'S:\nad12\FAME8', '/gpfs/group/nad12/default/nad12/FAME8')
         spm_changepath(fullfile(study_path, subjects{ss}, 'SPM.mat'), '\', '/')
     end
@@ -122,6 +123,8 @@ for ss = 1:length(subjects)
         % infortmation from this subject's SPM.mat
         ds_all  = cosmo_fmri_dataset(spm_path, 'mask', mask_fn);
 
+        ds_all.sa.targets = (1:size(ds_all.samples, 1))';
+        
         % Record the trial labels for this subject
         if isempty(trial_labels{ss})
 
@@ -144,20 +147,36 @@ for ss = 1:length(subjects)
         % cosmo check to make sure data in right format
         cosmo_check_dataset(ds_all);
 
-        % get the samples. The samples are the beta voxels extracted from the
-        % current ROI from ALL of the beta images, stored in a nBetaImages x
-        % nVoxels matrix
-        all_ds_samples = ds_all.samples;
-
         % compute correlation values between all trials, resulting
         % in a nTrials x nTrials matrix, where each cell of the matrix represents
-        % the correlation between the voxel patterns for each pair of trials
-        rho = cosmo_corr(all_ds_samples');
+        % the correlation between the voxel patterns for each pair of
+        % trials
+        % to do this, we are going to use cosmo's
+        % cosmo_dissimilarity_matrix_measure, which has some nice
+        % data organiziations features. NOTE: the output of this function
+        % is a dissimilarity matrix
+        ds_dsm = cosmo_dissimilarity_matrix_measure(ds_all);
 
+        
+        % There are two things to note about the outout of
+        % cosmo_dissimilarity_matrix measure:
+        %   1. It is a dissimilarity measure, 1-r
+        %   2. It is in vector form, an arbitrary data format designed to
+        %      save space and computation time
+        %
+        % We want to convert it back to its matrix form for nice, human
+        % readable visualization AND convert it back to similarity for 
+        % sanity's sake. The default dissimilarity measure in 
+        % cosmo_dissimilarity_matrix_measure is:
+        %   1 - r
+        % So, in order to get the similarity matrix we are looking for, we
+        % need to do (dsm - 1) * -1 AND convert it to matrix form
+        rho = (cosmo_squareform(ds_dsm.samples) - 1) * -1;
+        
         % Correlations are limited between -1 and +1, thus they cannot be normally
         % distributed. To make these correlations more 'normal', apply a Fisher
         % transformation and store this in a variable 'z'
-        z = atanh(rho);
+        z   = atanh(ds_dsm.samples);
 
         %% Display Results
         % display the resulting rho matrices
