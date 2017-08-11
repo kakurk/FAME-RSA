@@ -81,7 +81,6 @@ parentDir   = fileparts(study_path);
 out_path    = fullfile(parentDir, 'RSA_Results');
 
 % initalizing cell arrays for z_all, rho_all, and trial_labels
-z_all        = cell(1,length(rois));
 rho_all      = cell(1,length(rois));
 trial_labels = cell(1, length(subjects));
 
@@ -123,6 +122,9 @@ for ss = 1:length(subjects)
         % infortmation from this subject's SPM.mat
         ds_all  = cosmo_fmri_dataset(spm_path, 'mask', mask_fn);
 
+        % Create a targets field, which is required by
+        % cosmo_dissimilarity_matrix_measure. Each trial is a different
+        % target.
         ds_all.sa.targets = (1:size(ds_all.samples, 1))';
         
         % Record the trial labels for this subject
@@ -214,11 +216,10 @@ for ss = 1:length(subjects)
         xlswrite(fullfile(output_path, filename), z)
 
         %% Store result in a cell array for later calculations
-        z_all{r}   = cat(3, z_all{r}, z); % a nTrials x nTrials x nSubjects 3-D Matrix
         rho_all{r} = cat(3, rho_all{r}, rho); % a nTrials x nTrials x nSubjects 3-D Matrix
         
         %% Save the MATLAB figure
-        filename = [subjects{ss}, '_' roi_label '_rho_matrix.png'];
+        filename = [subjects{ss}, '_' roi_label '_rho_matrix.fig'];
         saveas(gcf, fullfile(output_path, filename))
         
     end
@@ -242,23 +243,23 @@ for s = 1:length(subjects)
     
     for r = 1:length(rois)
 
-        % The current subjects rho matrix
-        subjectsRhoMatrix = rho_all{r}(:,:,s);
-
-        % Grab just the lower off-diagonal of the current rho matrix. See
-        % tril documentation
-        lowerTriangle      = tril(subjectsRhoMatrix);
-
-        % set the diagnol (i.e., the identity correlations) to 0
-        lowerTriangle(lowerTriangle == 1) = 0;
+        % Step 1: Create a ds_dsm.sa.targets1 and ds_dsm.sa.targets2 fields
+        % that turns the numeric target representations --> labels
         
-        % initalize an empty nTrialTypesOfInterest x nTrialTypesOfInterest cell matrix
-        % note, the matrix is slightly bigger to accomondate row and column labels
-        trialtypeRSAmatrix   = cell(length(trialtypesOfInterest) + 1);
+        ds_dsm.sa.target1labels = cell(length(ds_all.sa.labels), 1);
+        ds_dsm.sa.target2labels = cell(length(ds_all.sa.labels), 1);
         
-        % add column and row labels
-        trialtypeRSAmatrix(1,2:end)   = trialtypesOfInterest;
-        trialtypeRSAmatrix(2:end, 1)  = trialtypesOfInterest;
+        for i = unique(ds_dsm.sa.targets1)'
+           filter = ds_dsm.sa.targets1 == i;
+           ds_dsm.sa.target1labels(filter) = ds_all.sa.labels(i);
+        end
+        
+        for i = unique(ds_dsm.sa.targets2)'
+           filter = ds_dsm.sa.targets2 == i;
+           ds_dsm.sa.target2labels(filter) = ds_all.sa.labels(i);
+        end
+        
+        % Step 2: Calculate the Within-Trial Type Mean Correlations
         
         % initalize an empty vector
         vector = zeros(1, length(trialtypesOfInterest));
@@ -267,12 +268,14 @@ for s = 1:length(subjects)
         % correlations within the same trial type)
         for k = 1:length(trialtypesOfInterest)
             curTT = trialtypesOfInterest{k};
-            vector(k)  = mean(extractCorrelations(lowerTriangle, trial_labels{s}, curTT, curTT));
+            vector(k)  = mean(extractCorrelations(ds_dsm, curTT, curTT));
         end
         
         % Put the within trial type mean correlations on the diagnol of an
         % empty square matrix. See diag documentation.
         diagnol = diag(vector);
+        
+        % Step 3: Calculate the Between-Trial Type Mean Correlations
         
         % initalize an empty vector for the off-diagnol correlations.
         % nchoosek determines that number of off-diagnol correlations. See
@@ -288,7 +291,7 @@ for s = 1:length(subjects)
         for cp = 1:length(offdiagnoal_combinations)
             firstinpair  = trialtypesOfInterest{offdiagnoal_combinations(cp, 1)};
             secondinpair = trialtypesOfInterest{offdiagnoal_combinations(cp, 2)};
-            vector(cp)   = mean(extractCorrelations(lowerTriangle, trial_labels{s}, firstinpair, secondinpair));
+            vector(cp)   = mean(extractCorrelations(ds_dsm, firstinpair, secondinpair));
         end
         
         % put the off-diagnol mean correlations into a square matrix. See
@@ -328,7 +331,7 @@ for s = 1:length(subjects)
         xlswrite(fullfile(output_path, filename), AverageRSAmatrix)
         
         %% Save the MATLAB figure
-        filename = [subjects{s}, '_' rois{r} '_trialtypeRSAmatrix.png'];
+        filename = [subjects{s}, '_' rois{r} '_trialtypeRSAmatrix.fig'];
         saveas(gcf, fullfile(output_path, filename))
         
     end
@@ -387,7 +390,7 @@ for r = 1:length(rois)
     
     set(ax_handles(r), 'clim', [min(col_limits(:)), max(col_limits(:))])
     
-    filename = [rois{r} '_averagetrialtypeRSAmatrix.png'];
+    filename = [rois{r} '_averagetrialtypeRSAmatrix.fig'];
     saveas(fg_handles(r), fullfile(out_path, filename))
     
 end
