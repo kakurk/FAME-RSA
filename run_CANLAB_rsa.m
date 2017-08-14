@@ -304,10 +304,6 @@ for s = 1:length(subjects)
         % Save this AverageRSAmatrix in a 3-D matrix for the next section
         AllSubjectsAverageRSAmatrix{r} = cat(3, AllSubjectsAverageRSAmatrix{r}, AverageRSAmatrix);
         
-        % Add this new square correlation matrix to the empty cell array we
-        % initalized further up in this section
-        trialtypeRSAmatrix(2:end, 2:end) = num2cell(AverageRSAmatrix);
-        
         %% Display Results
         % display the Average RSA matrices
 
@@ -338,7 +334,7 @@ for s = 1:length(subjects)
     
 end
 
-%% Across Subject's correlations
+%% Across Subjects correlations
 % Now that we have averaged within trial types, now we will average across
 % subjects
 
