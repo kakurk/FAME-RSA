@@ -18,6 +18,7 @@ This repository creates 3 models of the FAME data:
 - `SpecifyModel_memory.m`
 
 ### Directories  
+
 - `rootdir/models/001_visualcategory/FAMEret8/subID/`
 - `rootdir/models/002_trialtype/FAMEret8/subID/`
 - `rootdir/models/003_memory/FAMEret8/subID/`
@@ -37,6 +38,7 @@ Run multiple_condition files (see the [spm manual](http://www.fil.ion.ucl.ac.uk/
 - `EstimateModel.m`
 
 ### Directories  
+
 - `rootdir/models/001_visualcategory/FAMEret8/subID/`
 - `rootdir/models/002_trialtype/FAMEret8/subID/`
 - `rootdir/models/003_memory/FAMEret8/subID/`
@@ -57,6 +59,7 @@ Run multiple_condition files (see the [spm manual](http://www.fil.ion.ucl.ac.uk/
 - `generate_single_trial.m`
 
 ### Directories  
+
 - `rootdir/models/001_visualcategory/SingleTrialModel/subID/`
 - `rootdir/models/002_trialtype/SingleTrialModel/subID/`
 - `rootdir/models/003_memory/SingleTrialModel/subID/`
@@ -72,6 +75,7 @@ Same as Step 2: Model Estimate, but instead there is a *single regressor for eac
 - `run_rsa.m`
 
 ### Directories  
+
 - `rootdir/models/001_visualcategory/RSA_Results/subID/`
 - `rootdir/models/002_trialtype/RSA_Results/subID/`
 - `rootdir/models/003_memory/RSA_Results/subID/`
@@ -91,11 +95,36 @@ Same as Step 2: Model Estimate, but instead there is a *single regressor for eac
 - `compile_rsa.m`
 
 ### Directories  
+
 - `rootdir/models/001_visualcategory/RSA_Results/`
-- `rootdir/models/002_trialtype/RSA_Results`
-- `rootdir/models/003_memory/RSA_Results`
+- `rootdir/models/002_trialtype/RSA_Results/`
+- `rootdir/models/003_memory/RSA_Results/`
 
 ### Files Created 
 
-1. `subID_roiID_rho_matrix.csv`: the MVPA correlation matrix of every combination of trials. Each column and row represents a trial. The r-value in each cell is the correlation of the voxel pattern at this ROI between those two trials. The higher the r value, the more similar the pattern is.
-2. `subID_roiID_rho_matrix.csv`: the MVPA correlation matrix of every combination of trials. Each column and row represents a trial. The r-value in each cell is the correlation of the voxel pattern at this ROI between those two trials. The higher the r value, the more similar the pattern is.
+1. `roiID_averagetrialtypeRSAmatrix.csv`: the trialtypeRSAmatrix created in Step 4 but *averaged across subjects*.
+2. `roiID_averagetrialtypeRSAmatrix.fig`: same as above, but a MATLAB figure for visualization. Note, the color scale of these figures has been edited to be the *same across all ROIs*, in order to allow for easy visual inspection.
+
+## Step 6: Compile Results
+
+### Scripts
+
+- `functions/compile_results.m`
+
+### Directories
+
+- `rootdir/models/001_visualcategory/RSA_Results/`
+- `rootdir/models/002_trialtype/RSA_Results/`
+- `rootdir/models/003_memory/RSA_Results/`
+
+### Files Created 
+
+1. `compiled_roiID_trialtypeRSAmatrix.csv`: compiled data for this ROI, formatted for easy importing in your favorite statistical software for computation of an ANOVA. Contains columns for:
+
+- `subjectID` = subject's ID
+- `TrialCombination` = trial type combination, of the form "TrialType1-TrialType2"
+- `correlation` = mean correlation value for this subject across trials of TrialType1 and TrialType2
+
+## Step 7: ANOVA
+
+For the final step, we need to compute a within subject's ANOVA with follow-up t-tests to answer our hypotheses. These needs to be done in another SPSS package such as [R](https://www.r-project.org/) or [SPSS](https://www.ibm.com/us-en/marketplace/spss-statistics)
