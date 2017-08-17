@@ -69,7 +69,7 @@ elseif m == 1
                             'wagon','watercan','wheelbarrow','whistle'};
 end
 
-%% Trial Correlations
+%% Routine
 
 % path to save results into
 parentDir   = fileparts(study_path);
@@ -77,6 +77,9 @@ out_path    = fullfile(parentDir, 'RSA_Results');
 
 % initalizing cell arrays for z_all, rho_all, and trial_labels
 rho_all      = cell(1,length(rois));
+
+% A cell array that will hold the AverageRSAmatrices
+AllSubjectsAverageRSAmatrix = cell(1, length(rois));
 
 % create a new figure
 figure('Visible', 'off');
@@ -103,7 +106,8 @@ if ~exist(output_path, 'dir')
 end
 
 for r = 1:length(rois)
-
+    %% Trial by Trial Correlations
+    
     % current ROI label
     roi_label = rois{r};
 
@@ -167,7 +171,7 @@ for r = 1:length(rois)
     % transformation and store this in a variable 'z'
     z   = atanh(ds_dsm.samples);
 
-    %% Display Results
+    %% Display Results of Trial by Trial Correlations
     % display the resulting rho matrices
 
     % visualize the rho matrix using imagesc
@@ -208,24 +212,13 @@ for r = 1:length(rois)
     %% Save the MATLAB figure
     filename = [subjectID, '_' roi_label '_rho_matrix.fig'];
     saveas(gcf, fullfile(output_path, filename))
-
-end
-
-%% Trial Type Correlations
-% Now that we calculated a nTrial x nTrials RSA matrix for each subject, we
-% want to combine trials by our trial types of interest to create a
-% nTrialTypesOfInterest x nTrialTypesOfInterest RSA matrix which averages
-% the within and between trial types correlations.
-
-% A cell array that will hold the AverageRSAmatrices
-AllSubjectsAverageRSAmatrix = cell(1, length(rois));
     
-% This subject's
-%   output_path = fullpath to this subject's RSA output directory
-output_path = fullfile(out_path, subjectID);
-
-for r = 1:length(rois)
-
+    %% Trial Type by Trial Type Correlations
+    % Now that we calculated a nTrial x nTrials RSA matrix for each subject, we
+    % want to combine trials by our trial types of interest to create a
+    % nTrialTypesOfInterest x nTrialTypesOfInterest RSA matrix which averages
+    % the within and between trial types correlations.
+    
     % Step 1: Create a ds_dsm.sa.targets1 and ds_dsm.sa.targets2 fields
     % that turns the numeric target representations --> labels
 
@@ -287,7 +280,7 @@ for r = 1:length(rois)
     % Save this AverageRSAmatrix in a 3-D matrix for the next section
     AllSubjectsAverageRSAmatrix{r} = cat(3, AllSubjectsAverageRSAmatrix{r}, AverageRSAmatrix);
 
-    %% Display Results
+    %% Display Results of Trial Type by Trial Type Correlations
     % display the Average RSA matrices
 
     % visualize the rho matrix using imagesc
