@@ -28,32 +28,26 @@ function [] = SpecifyModel()
 % current analysis is in, and the directoy which houses the behavioral
 % data.
 
-Analysis.name             = 'Name_Of_Model_hrf';
-Analysis.directory        = fullfile('/path/to/analysis/directory', Analysis.name);
-Analysis.behav.directory  = '/path/to/behavioral/data/directory';
+Analysis.name             = 'SingleTrialModel';
+Analysis.directory        = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models', Analysis.name);
+Analysis.behav.directory  = '/gpfs/group/nad12/default/nad12/FAME8/Behav';
 
 
 % User Input Step 2: Subjects
 
 % Please list the subjects to model in a 1 x N cell array.
 
-Subjects       = { 'y001' 'y002' 'y003' 'y004' 'y005' ...
-                   'o001' 'o002' 'o003' 'o004' 'o005' };
+Subjects       = { '18y404'  '20y297'  '20y415'  '20y441'  '20y455' ... 
+                   '21y437'  '21y534'  '23y452'  '25y543'  '18y566' ... 
+                   '20y396'  '20y439'  '20y444'  '21y299'  '21y521' ...
+                   '22y422'  '23y546' }';
 
 
 % User Input Step 3: Model Specifics
 
-% Each model is unique, with a different number of trial types, a
-% different behavioral excel sheet identifier, and whether or not there
-% are any parametric modulators. In this section, please specify the
-% following variables for you model:
-% - Number of Trial Types (i.e., regressors)
 % - Behavioral File Regular Expression
-% - Number of Parametric Modulators
 
-Number.OfTrialTypes           = 4;
-Analysis.behav.regexp         = '.*_ENCdm.xls';
-ParametricMods                = 0;
+Analysis.behav.regexp         = '.*ret.xls$';
 
 %% Routine
 
@@ -87,6 +81,10 @@ for indexS = 1:length(Subjects)
 
     fprintf('Reading in Subject %s ''s Behav Data ...\n\n\n\n', curSubj.name)
     BehavData     = readtable(curSubj.behavFile);
+    
+    % Clean up variable names
+    BehavData.Properties.VariableNames = regexprep(regexprep(BehavData.Properties.VariableNames, '_', ''), '^x', '');
+    
     Number.OfRows = height(BehavData);
 
     %-- Build path to this subjects analysis directory
@@ -103,8 +101,7 @@ for indexS = 1:length(Subjects)
     % The counter cell array will keep track of how many trials occur in
     % each trial type in each functional run
 
-    Number.OfRuns = max(unique(BehavData.Run));
-    counter       = zeros(Number.OfRuns, Number.OfTrialTypes);
+    Number.OfRuns = max(unique(BehavData.runID));
 
     %-- Build the multiple conditions *.mat file for each run
 
@@ -117,211 +114,61 @@ for indexS = 1:length(Subjects)
         % structure arrays, which will be filled in with the
         % approrpiate information in a nested for loop.
 
-        names     = cell(1, Number.OfTrialTypes); % initalizing TT names
-        onsets    = cell(1, Number.OfTrialTypes); % initalizing TT onset vector
-        durations = cell(1, Number.OfTrialTypes); % intializing TT durations vector
-
-        % Only initialize the pmod structure array if this model
-        % contains (a) parametric modulator(s)
-
-        if ParametricMods > 0
-            for indexP = 1:Number.OfTrialTypes
-                pmod(indexP).name  = cell(1,ParametricMods);
-                pmod(indexP).param = cell(1,ParametricMods);
-                pmod(indexP).poly  = cell(1,ParametricMods);
-            end
-        end
-
-        %-- for each trial...
+        % the raw onset column for this run divided by 1000 to put it in
+        % seconds
+        onsets    = num2cell(BehavData.RAWONSET(BehavData.runID == curRun)/1000)';
         
-        for curTrial = 1:Number.OfRows
+        % zero for each trial, a stick function
+        number_of_trials_in_this_run = length(find(BehavData.runID == curRun));
+        durations                    = num2cell(zeros(1, number_of_trials_in_this_run));
+       
+        % loop over all the trials in this run
+        this_run_idxs = find(BehavData.runID == curRun);
+        names         = cell(1, length(this_run_idxs)); % initialize
+        
+        for i = 1:length(this_run_idxs)
             
-            % Sort this trial into a "bin" or trial type
-            % Sort the trial types one functional run at a time
-
-            % if the current trial is a part of the current run...
-            if curRun == BehavData.Run(curTrial);
-
-                %--clean up the command window and update the user
-                clc
-                fprintf('Sorting Run %d...\n\n', curRun)                    
-                fprintf('Sorting Trial %d...\n\n', (curTrial-1))
-
-                %--record variable values for this trial
-                
-                rawonset    = BehavData.rawonset(curTrial);    % trial onset time
-                score       = BehavData.score(curTrial);       % score
-                type        = BehavData.type(curTrial);        % type
-                relatedness = BehavData.relatedness(curTrial); % relatedness para mod
-
-                %--Sort Trials into Trial Type Bins
-                
-                % Initalize the Trial Type index, which simply keeps track
-                % of which trial type number we are on
-                indexTT = 0;
-
-                % Trial Type: HighHit
-                indexTT = indexTT+1;
-                if  type == 0 && score == 4
-
-                    counter(curRun,indexTT)                     = counter(curRun,indexTT)+1;
-                    names{indexTT}                              = 'HighHit';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset/1000;
-                    durations{indexTT}(counter(curRun,indexTT)) = 0;
-
-                end
-
-                % Trial Type: LowHit
-                indexTT = indexTT+1;                            
-                if  type == 0 && score == 3
-
-                    counter(curRun,indexTT) = counter(curRun,indexTT)+1; 
-                    names{indexTT}                              = 'LowHit';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset/1000;
-                    durations{indexTT}(counter(curRun,indexTT)) = 0;
-
-                end
-
-                % Trial Type: AllMiss
-                indexTT = indexTT+1;                            
-                if  type == 0 && (score == 2 || score == 1)
-
-                    counter(curRun,indexTT) = counter(curRun,indexTT)+1; 
-                    names{indexTT}                              = 'AllMiss';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset/1000;
-                    durations{indexTT}(counter(curRun,indexTT)) = 0;
-
-                end
-
-                % Trial Type: AllFA
-                indexTT = indexTT+1;                            
-                if  (type == 1 || type == 2 || type == 3 || type == 4) ...
-                        && (score == 2 || score == 1)
-
-                    counter(curRun,indexTT) = counter(curRun,indexTT)+1;
-                    names{indexTT}                              = 'AllFA';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset/1000;
-                    durations{indexTT}(counter(curRun,indexTT)) = 0;
-
-                    % Parametric Modulators for this Trial Type
-                    indexPmod = 0;
-
-                    % Parametric Modulator 1
-                    indexPmod = indexPmod + 1;
-                    pmod(indexTT).name{indexPmod}  = 'Relatedness';
-                    pmod(indexTT).param{indexPmod}(counter(curRun,indexTT)) = relatedness;
-                    pmod(indexTT).poly{indexPmod}  = 1;
-
-                end
-
-                % Trial Type: HiCR
-                indexTT = indexTT+1;
-                if (type == 1 || type == 2 || type == 3 || type == 4) ...
-                        && score == 4
-
-                    counter(curRun,indexTT) = counter(curRun,indexTT)+1;
-                    names{indexTT}                              = 'HiCR';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset/1000;
-                    durations{indexTT}(counter(curRun,indexTT)) = 0;
-
-                    % Parametric Modulators for this Trial Type
-                    indexPmod = 0;
-
-                    % Parametric Modulator 1
-                    indexPmod = indexPmod + 1;
-                    pmod(indexTT).name{indexPmod}  = 'Relatedness';
-                    pmod(indexTT).param{indexPmod}(counter(curRun,indexTT)) = relatedness;
-                    pmod(indexTT).poly{indexPmod}  = 1;
-
-                end
-
-                % Trial Type: LoCR
-                indexTT = indexTT+1;
-                if (type == 1 || type == 2 || type == 3 || type == 4) ...
-                        && score == 3
-
-                    counter(curRun,indexTT) = counter(curRun,indexTT)+1;
-                    names{indexTT}                              = 'LoCR';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset/1000;
-                    durations{indexTT}(counter(curRun,indexTT)) = 0;
-
-                    % Parametric Modulators for this Trial Type
-                    indexPmod = 0;
-
-                    % Parametric Modulator 1
-                    indexPmod = indexPmod + 1;
-                    pmod(indexTT).name{indexPmod}  = 'Relatedness';
-                    pmod(indexTT).param{indexPmod}(counter(curRun,indexTT)) = relatedness;
-                    pmod(indexTT).poly{indexPmod}  = 1;   
-
-                end
-
-                % Trial Type: NR
-                indexTT = indexTT+1;
-                if score == 99
-
-                    counter(curRun,indexTT) = counter(curRun,indexTT)+1;
-                    names{indexTT}                              = 'NR';
-                    onsets{indexTT}(counter(curRun,indexTT))    = rawonset/1000;
-                    durations{indexTT}(counter(curRun,indexTT)) = 0;
-
-                end
-                
-                %-- Update the user on the sorting process
-                % Display the Names, Onsets, Durations, and Pmod structure
-                % arrays with a brief pause in between so the user can
-                % interactively see trials being sorted
-                
-                fprintf('\n')
-                disp('Names:')
-                disp(names')
-                disp('Onsets:')
-                disp(onsets')
-                disp('Durations:')
-                disp(durations')
-                if exist('pmod','var')
-                    disp('Parametic Modulators')
-                    for indexPmod = 1:length(pmod)
-                        disp(pmod(indexPmod))
-                    end
-                end
-                fprintf('\n')
-                pause(.1)
-                
-                
+            % the current trial index
+            iIDX = this_run_idxs(i);
+            
+            %%% pull variables to add to the trial file name
+            
+            % visual category
+            visual_category = regexp(BehavData.image(iIDX), '(?<=\\)[a-z]+', 'match');
+            visual_category = strtrim(visual_category{1}{:});
+            
+            % response
+            if BehavData.response(iIDX) == 0
+                response        = 'nr';
+            elseif BehavData.response(iIDX) == 28
+                response        = 'remember';
+            elseif BehavData.response(iIDX) == 29
+                response        = 'familiar';
+            elseif BehavData.response(iIDX) == 30
+                response        = 'new';
             end
-
-        end
-
-        %-- Prune Missing Trial Types
-        % Check to see if all trial types occured in this run. If any did
-        % not, remove them from the names/onsets/durations/pmod strucure
-        % arrays
-
-        fprintf('\nPruning Non-existant Trial Types...\n\n')
-        if exist('pmod', 'var')
-            [names, onsets, durations, pmod] = prune_nonexistent_trialtypes(names, onsets, durations, pmod);
-        else
-            [names, onsets, durations]       = prune_nonexistent_trialtypes(names, onsets, durations);
+            
+            % trialtype
+            if BehavData.type(iIDX) == 1
+                trialtype        = 'target';
+            elseif BehavData.type(iIDX) == 3
+                trialtype        = 'relatedLure';
+            elseif BehavData.type(iIDX) == 4
+                trialtype        = 'unrelatedLure';
+            end
+            
+            % enctype
+            if BehavData.encType(iIDX) == 1
+                enctype        = 'blocked';
+            elseif BehavData.encType(iIDX) == 2
+                enctype        = 'scrambled';
+            end
+            
+            % informative, unique, BIDS style trial name
+            names{i} = sprintf('visualcategory-%s_response-%s_trialtype-%s_enctype-%s', visual_category, response, trialtype, enctype);
+        
         end
         
-        %-- User Update Post Pruning
-        % Update the user with what the pruned Names, Onsets, Durations,
-        % and Pmod structure arrays after pruning
-        
-        fprintf('\n')
-        disp('Names:')
-        disp(names')
-        disp('Onsets:')
-        disp(onsets')
-        disp('Durations:')
-        disp(durations')
-        if exist('pmod','var')
-            disp('Parametic Modulators')
-            disp(pmod)
-        end
-        fprintf('\n')
-
         %-- Save the Multiple Conditions *.mat file
         % Save the names, onsets, durations, and pmod variables in a .mat
         % file to be uploaded back into MATLAB/SPM at a later date for
@@ -330,102 +177,11 @@ for indexS = 1:length(Subjects)
         matfilename = fullfile(curSubj.directory, ['Run', num2str(curRun, '%03d'), '_multiple_conditions.mat']);
         fprintf('Saving Subject %s''s Run %d multiple conditions file...\n\n\n', curSubj.name, curRun)
         pause(3)
-        if ParametricMods ~= 0
-            save(matfilename, 'names', 'onsets', 'durations', 'pmod');
-        else
-            save(matfilename, 'names', 'onsets', 'durations');
-        end
+        save(matfilename, 'names', 'onsets', 'durations');
 
     end
 end
 
 disp('All Finished!!')
-    
-%% 
-%==========================================================================
-%				Sub Functions
-%==========================================================================    
-
-function [varargout] = prune_nonexistent_trialtypes(varargin)
-% prune_noexistent_trialtypes   function that removes empty fields of
-%                               a set of names/onsets/durations/pmod
-%                               structures
-%
-%   varargin{1} = in_names = a "names" structure to be used with SPM's
-%                            matlabbatch system
-%
-%   varargin{2} = in_onsets = an "onsets" structure to be used with
-%                             SPM's matlabbatch system
-%
-%   varargin{3} = in_durations = a "durations" structure to be used
-%                                with SPM's matlabbatch system
-%
-%   varargin{4} = in_pmod = a "pmod" structure to be used with SPM's
-%                           matlabbatch system
-%
-%   varargout{1} = out_names = a "names" structure array with the empty
-%                              fields removed
-%
-%   varargout{2} = out_onsets = an "onsets" structure to be used with
-%                             SPM's matlabbatch system
-%
-%   varargout{3} = out_durations = a "durations" structure to be used
-%                                with SPM's matlabbatch system
-%
-%   varargout{4} = out_pmod = a "pmod" structure to be used with SPM's
-%                           matlabbatch system
-%
-%   See also: spm_jobman 
-
-    in_names     = varargin{1};
-    in_onsets    = varargin{2};
-    in_durations = varargin{3};
-    if nargin == 4
-        in_pmod = varargin{4};
-    end
-
-    ncount = 0;
-    for n = 1:length(in_names)
-        if ~isempty(in_names{n})
-            ncount = ncount+1;
-            outnames{ncount} = in_names{n};
-        end
-    end
-
-    ocount = 0;
-    for o = 1:length(in_onsets)
-        if ~isempty(in_onsets{o})
-            ocount = ocount+1;
-            outonsets{ocount} = in_onsets{o};             
-        end
-    end
-
-    dcount = 0;
-    for d = 1:length(in_durations)
-        if ~isempty(in_durations{d})
-            dcount = dcount + 1;
-            outdurations{dcount} = in_durations{d};
-        else
-            pmod_ind = d;
-        end
-    end
-
-    if nargin == 4
-        pcount = 0;
-        for p = 1:length(in_pmod)
-            if p ~= pmod_ind
-                pcount = pcount + 1;
-                outpmod(pcount) = in_pmod(p);
-            end
-        end
-    end
-
-    varargout{1} = outnames;
-    varargout{2} = outonsets;
-    varargout{3} = outdurations;
-    if nargin == 4
-        varargout{4} = outpmod;
-    end
-end
 
 end

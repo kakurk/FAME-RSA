@@ -1,4 +1,4 @@
-function [] = EstimateModel(root)
+function [] = EstimateModel(Subjects)
 % EstimateModel     function for estimating a GLM specified using the
 %                   SpecifyModel. Allows user to display the
 %                   trial type onsets/durations in the SPM Batch GUI
@@ -8,14 +8,16 @@ function [] = EstimateModel(root)
 % You should ONLY (!!!!!!) need to edit this highlighted section of the
 % script.
 
+addpath(genpath('/gpfs/group/nad12/default/nad12/spm12'))
+
 % User Input Step 1: Analysis, Funcs, and Masks
 
 % Please specify the name of the current analysis, the directory the
 % current analysis is in, and the directoy which houses the behavioral
 % data.
 
-Analysis.name = 'FAMEret8';
-Analysis.dir  = fullfile(root, Analysis.name);
+Analysis.name = 'SingleTrialModel';
+Analysis.dir  = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models', Analysis.name);
 
 Func.dir         = '/gpfs/group/nad12/default/nad12/FAME8/Func_ret';
 Func.wildcard    = '^wa.*\.img';
@@ -29,10 +31,10 @@ Mask.name = 'name_of_mask.img';
 
 % Please list the subjects to model in a 1 x N cell array.
 
-Subjects       = { '18y404'  '20y297'  '20y415'  '20y441'  '20y455' ... 
-                   '21y437'  '21y534'  '23y452'  '25y543'  '18y566' ... 
-                   '20y396'  '20y439'  '20y444'  '21y299'  '21y521' ...
-                   '22y422'  '23y546' }';
+% Subjects       = { '18y404'  '20y297'  '20y415'  '20y441'  '20y455' ... 
+%                    '21y437'  '21y534'  '23y452'  '25y543'  '18y566' ... 
+%                    '20y396'  '20y439'  '20y444'  '21y299'  '21y521' ...
+%                    '22y422'  '23y546' }';
 
 %Subjects       = { '79o108'};%'69o277'  '75o320'  '70o316'  '81o312' ...
                   % '67o153'  '79o117' }';
