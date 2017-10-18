@@ -1,4 +1,4 @@
-function run_rsa(subjectID, roi_label)
+function run_rsa(subjectID)
 % ROI-based MVPA analysis for a single subject
 %
 % Load single-trial beta images from each subject, apply ROI mask, calculate 
@@ -11,11 +11,7 @@ function run_rsa(subjectID, roi_label)
 %% Pre analysis
 
 % Add CoSMoMVPA to the MATLAB search path
-if isunix % if we are on ACI, a unix system
-    addpath(genpath('/gpfs/group/nad12/default/nad12/CoSMoMVPA-master'))
-else % if not on unix, assume we are on Anvil
-    addpath(genpath('S:\nad12\CoSMoMVPA-master'))
-end
+addpath(genpath('/storage/home/kak53/CoSMoMVPA'))
 
 % add the functions subfolder to the MATLAB search path
 path = fileparts(mfilename('fullpath'));
@@ -32,6 +28,7 @@ cosmo_warning('off')
 %   roi_path             = directory that holds the ROIs
 %   studypath            = directory that holds the Single Trial SPM model.
 roi_path             = '/gpfs/group/nad12/default/nad12/FAME8/RSA/ROIs';
+roi_label            = 'rwholebrain_mask';
 study_path           = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models', 'SingleTrialModel');
 
 %% Directories
@@ -62,7 +59,9 @@ mask_fn  = fullfile(roi_path, [roi_label '.nii']);
 
 % load beta images, utilizing cosmo_frmi_dataset's ability to extract
 % infortmation from this subject's SPM.mat
+tic
 ds  = cosmo_fmri_dataset(spm_path, 'mask', mask_fn);
+toc
 
 % Create a targets field, which is required by
 % cosmo_dissimilarity_matrix_measure. Each trial is a different
@@ -82,7 +81,7 @@ cosmo_check_dataset(ds);
 % cosmo_dissimilarity_matrix_measure, which has some nice
 % data organiziations features. NOTE: the output of this function
 % is a **dissimilarity** matrix of 1-r, which has values between -2 and 2
-ds_dsm = cosmo_dissimilarity_matrix_measure(ds);
+%ds_dsm = cosmo_dissimilarity_matrix_measure(ds);
 
 % There are two things to note about the outout of
 % cosmo_dissimilarity_matrix measure:
@@ -97,53 +96,91 @@ ds_dsm = cosmo_dissimilarity_matrix_measure(ds);
 %   1 - r
 % So, in order to get the similarity matrix we are looking for, we
 % need to do (dsm - 1) * -1 AND convert it to matrix form
-rho = (cosmo_squareform(ds_dsm.samples) - 1) * -1;
+%rho = (cosmo_squareform(ds_dsm.samples) - 1) * -1;
 
 %% Display Pattern Similarity
 % display the resulting rho matrices
 
-% visualize the rho matrix using imagesc
-imagesc(rho);
+% % visualize the rho matrix using imagesc
+% imagesc(rho);
+% 
+% % set axis labels
+% %   set axis labels by figuring out the half way mark for each
+% %   session
+% labelPositions = [];
+% for sess = 1:6
+%     firstID = find(~cellfun(@isempty, regexp(ds.sa.labels, ['Sn\(' num2str(sess) '\).*'])), 1, 'first');
+%     lastID  = find(~cellfun(@isempty, regexp(ds.sa.labels, ['Sn\(' num2str(sess) '\).*'])), 1, 'last');
+%     curlabelPosition = firstID + ceil((lastID - firstID)/2);
+%     labelPositions = horzcat(labelPositions, curlabelPosition);
+% end
+% set(gca, 'xtick', labelPositions, 'xticklabel', {'Sn(1)' 'Sn(2)' 'Sn(3)' 'Sn(4)' 'Sn(5)' 'Sn(6)'})
+% set(gca, 'ytick', labelPositions, 'yticklabel', {'Sn(1)' 'Sn(2)' 'Sn(3)' 'Sn(4)' 'Sn(5)' 'Sn(6)'})
+% 
+% % title
+% desc=sprintf(['Pattern Similarity among all trials for subject %s '...
+%                 'in roi ''%s'''], subjectID, regexprep(roi_label, '_', ' '));
+% title(desc)
+% 
+% % colorbar
+% colorbar('EastOutside');
+% 
+% %% Write rho matrix to Excel
+% filename = ['sub-' subjectID, '_roi-' roi_label '_psa-matix.xlsx'];
+% xlswrite(fullfile(output_path, filename), rho)
+% 
+% %% Save the MATLAB figure
+% filename = ['sub-' subjectID, '_roi-' roi_label '_psa-matrix.fig'];
+% saveas(gcf, fullfile(output_path, filename))
 
-% set axis labels
-%   set axis labels by figuring out the half way mark for each
-%   session
-labelPositions = [];
-for sess = 1:6
-    firstID = find(~cellfun(@isempty, regexp(ds.sa.labels, ['Sn\(' num2str(sess) '\).*'])), 1, 'first');
-    lastID  = find(~cellfun(@isempty, regexp(ds.sa.labels, ['Sn\(' num2str(sess) '\).*'])), 1, 'last');
-    curlabelPosition = firstID + ceil((lastID - firstID)/2);
-    labelPositions = horzcat(labelPositions, curlabelPosition);
+%% Compare Neural Pattern Similarity to Hypothesized Target DSM using a searchlight
+
+%%% Target DSM
+
+% Hypothesis: There is a linear dissimilarity among trial types
+tarFilt       = ~cellfun(@isempty, strfind(ds.sa.labels, 'trialtype-target'));
+relLureFilt   = ~cellfun(@isempty, strfind(ds.sa.labels, 'trialtype-relatedLure'));
+unrelLureFilt = ~cellfun(@isempty, strfind(ds.sa.labels, 'trialtype-unrealtedLure'));
+
+trial_type                = zeros(length(ds.sa.labels), 1);
+trial_type(tarFilt)       = 1;
+trial_type(relLureFilt)   = 2;
+trial_type(unrelLureFilt) = 3;
+
+target_dsm = abs(bsxfun(@minus, trial_type, trial_type'));
+
+% within runs dsm
+within_run_dsm = false(length(ds.sa.chunks));
+for iChunk = unique(ds.sa.chunks)'
+    boolean_vector = ds.sa.chunks == iChunk;
+    within_run_dsm = within_run_dsm | kron(boolean_vector, boolean_vector');
 end
-set(gca, 'xtick', labelPositions, 'xticklabel', {'Sn(1)' 'Sn(2)' 'Sn(3)' 'Sn(4)' 'Sn(5)' 'Sn(6)'})
-set(gca, 'ytick', labelPositions, 'yticklabel', {'Sn(1)' 'Sn(2)' 'Sn(3)' 'Sn(4)' 'Sn(5)' 'Sn(6)'})
+target_dsm(within_run_dsm) = NaN;
 
-% title
-desc=sprintf(['Pattern Similarity among all trials for subject %s '...
-                'in roi ''%s'''], subjectID, regexprep(roi_label, '_', ' '));
-title(desc)
+% force diagnol to be zeros
+target_dsm(logical(eye(size(target_dsm)))) = 0;
 
-% colorbar
-colorbar('EastOutside');
+% display
+imagesc(target_dsm)
+    
+%%% Neighborhood
+nvoxels_per_searchlight = 100;
+nbrhood                 = cosmo_spherical_neighborhood(ds, 'count', nvoxels_per_searchlight);
 
-%% Write rho matrix to Excel
-filename = ['sub-' subjectID, '_roi-' roi_label '_psa-matix.xlsx'];
-xlswrite(fullfile(output_path, filename), rho)
+%%% Measure
+measure         = @cosmo_target_dsm_corr_measure;
+args            = struct();
+args.target_dsm = target_dsm;
+args.type       = 'Spearman';
+args.center     = 1;
 
-%% Save the MATLAB figure
-filename = ['sub-' subjectID, '_roi-' roi_label '_psa-matrix.fig'];
-saveas(gcf, fullfile(output_path, filename))
+%%% Run Searchlight
+tic
+ds_sl = cosmo_searchlight(ds, nbrhood, measure, args);
+toc
 
-%% Compare Neural Pattern Similarity to Hypothesized Target DSM
-
-keyboard
-
-%%% Target DSMs
-% These matrices are our hypothesized similarity matrices.
-
-% Hypothesis 1:
-
-ds_sa = cosmo_target_dsm_corr_measure(ds);
-
+%%% Save Results of Searchlight
+searchlight_results_fn = fullfile(output_path, sprintf('sub-%s_trialtype_searchlight.nii', subjectID));
+cosmo_map2fmri(ds_sl, searchlight_results_fn);
 
 end
