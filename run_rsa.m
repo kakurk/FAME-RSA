@@ -1,4 +1,4 @@
-function run_rsa(subjectID)
+function run_rsa(subject, ROI, targetDSMID)
 % ROI-based MVPA analysis for a single subject
 %
 % Load single-trial beta images from each subject, apply ROI mask, calculate 
@@ -28,7 +28,6 @@ cosmo_warning('off')
 %   roi_path             = directory that holds the ROIs
 %   studypath            = directory that holds the Single Trial SPM model.
 roi_path             = '/gpfs/group/nad12/default/nad12/FAME8/RSA/ROIs';
-roi_label            = 'rrwholebrain_mask';
 study_path           = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models', 'SingleTrialModel');
 
 %% Directories
@@ -43,9 +42,9 @@ out_path    = fullfile(parentDir, 'RSA_Results');
 %                 :beta appended to the end tells cosmo to pull the beta 
 %                 information from the SPM.mat file.
 %   output_path = fullpath to this subject's RSA output directory
-data_path   = fullfile(study_path, subjectID);
+data_path   = fullfile(study_path, subject);
 spm_path    = fullfile(data_path, 'SPM.mat:beta');
-output_path = fullfile(out_path, subjectID);
+output_path = fullfile(out_path, subject);
 
 % create the output path if it doesn't already exist
 if ~exist(output_path, 'dir')
@@ -55,7 +54,7 @@ end
 %% Pattern Similarity Matrices
 
 % full path to ROI mask
-mask_fn  = fullfile(roi_path, [roi_label '.nii']);
+mask_fn  = fullfile(roi_path, [ROI '.nii']);
 
 % load beta images, utilizing cosmo_frmi_dataset's ability to extract
 % infortmation from this subject's SPM.mat
@@ -133,21 +132,59 @@ cosmo_check_dataset(ds);
 
 %% Compare Neural Pattern Similarity to Hypothesized Target DSM using a searchlight
 
-%%% Target DSM
-
-% Hypothesis: There is a linear dissimilarity among trial types
+% memory trial types
 tarFilt       = ~cellfun(@isempty, strfind(ds.sa.labels, 'trialtype-target'));
 relLureFilt   = ~cellfun(@isempty, strfind(ds.sa.labels, 'trialtype-relatedLure'));
 unrelLureFilt = ~cellfun(@isempty, strfind(ds.sa.labels, 'trialtype-unrealtedLure'));
 
-trial_type                = zeros(length(ds.sa.labels), 1);
-trial_type(tarFilt)       = 1;
-trial_type(relLureFilt)   = 2;
-trial_type(unrelLureFilt) = 3;
+% response types
+rememberFilt  = ~cellfun(@isempty, strfind(ds.sa.labels, 'response-remember'));
+familarFilt   = ~cellfun(@isempty, strfind(ds.sa.labels, 'response-familar'));
+newFilt       = ~cellfun(@isempty, strfind(ds.sa.labels, 'response-new'));
+nrFilt        = ~cellfun(@isempty, strfind(ds.sa.labels, 'response-nr'));
 
-target_dsm = abs(bsxfun(@minus, trial_type, trial_type'));
+%%% Target DSMs
 
-% within runs dsm
+switch targetDSMID
+    
+    case 1
+        % Hypothesis tested: Rec Hits and Fam Hits are represented
+        % similarily AND are represented differently then all other trial
+        % types
+        RecHitsFilt  = rememberFilt & tarFilt;
+        FamHitsFilt  = familarFilt  & tarFilt;
+        combinedFilt = RecHitsFilt | FamHitsFilt;
+        
+    case 2
+        % Hypothesis tested: Rec FAs and Fam FAs are represented
+        % similarily AND are represented differently then all other trial
+        % types
+        RecFAsFilt   = rememberFilt & (relLureFilt | unrelLureFilt);
+        FamFAsFilt   = familarFilt  & (relLureFilt | unrelLureFilt);
+        combinedFilt = RecFAsFilt | FamFAsFilt;
+        
+    case 3
+        % Hypothesis tested: Rec Hits and Rec FAs are represented
+        % similarily AND are represented differently then all other trial
+        % types
+        RecHitsFilt  = rememberFilt & tarFilt;
+        RecFAsFilt   = rememberFilt & (relLureFilt | unrelLureFilt);
+        combinedFilt = RecHitsFilt | RecFAsFilt;
+        
+    case 4
+        % Hypothesis tested: Rec Hits and Fam Hits are represented
+        % similarily AND are represented differently then all other trial
+        % types
+        FamHitsFilt  = familarFilt  & tarFilt;
+        FamFAsFilt   = familarFilt  & (relLureFilt | unrelLureFilt);
+        combinedFilt = FamHitsFilt | FamFAsFilt;
+        
+end
+
+% initalize target_dsm
+target_dsm   = kron(combinedFilt, combinedFilt');
+
+% exclude within run correlations
 within_run_dsm = false(length(ds.sa.chunks));
 for iChunk = unique(ds.sa.chunks)'
     boolean_vector = ds.sa.chunks == iChunk;
@@ -158,25 +195,19 @@ target_dsm(within_run_dsm) = NaN;
 % force diagnol to be zeros
 target_dsm(logical(eye(size(target_dsm)))) = 0;
 
-% display
-imagesc(target_dsm)
-    
-%%% Neighborhood
-nvoxels_per_searchlight = 100;
-nbrhood                 = cosmo_spherical_neighborhood(ds, 'count', nvoxels_per_searchlight);
-
-%%% Measure
-measure         = @cosmo_target_dsm_corr_measure;
-args            = struct();
+%%% Compare neural DSM to Target DSM
 args.target_dsm = target_dsm;
 args.type       = 'Spearman';
 args.center     = 1;
 
-%%% Run Searchlight
-ds_sl = cosmo_searchlight(ds, nbrhood, measure, args);
+ds_results = cosmo_target_dsm_corr_measure(ds, args);
 
-%%% Save Results of Searchlight
-searchlight_results_fn = fullfile(output_path, sprintf('sub-%s_trialtype_searchlight.nii', subjectID));
-cosmo_map2fmri(ds_sl, searchlight_results_fn);
+%%% Save results to file
+correlation = ds_results.samples;
+subject     = {subject};
+ROI         = {ROI};
+results     = table(subject, ROI, targetDSMID, correlation);
+
+writetable(results, fullfile(output_path, sprintf('sub-%s_roi-%s_targetdsm-%d.csv', subject{1}, ROI{1}, targetDSMID)))
 
 end
