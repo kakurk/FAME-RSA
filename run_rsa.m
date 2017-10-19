@@ -28,7 +28,7 @@ cosmo_warning('off')
 %   roi_path             = directory that holds the ROIs
 %   studypath            = directory that holds the Single Trial SPM model.
 roi_path             = '/gpfs/group/nad12/default/nad12/FAME8/RSA/ROIs';
-roi_label            = 'rwholebrain_mask';
+roi_label            = 'rrwholebrain_mask';
 study_path           = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models', 'SingleTrialModel');
 
 %% Directories
@@ -59,9 +59,7 @@ mask_fn  = fullfile(roi_path, [roi_label '.nii']);
 
 % load beta images, utilizing cosmo_frmi_dataset's ability to extract
 % infortmation from this subject's SPM.mat
-tic
 ds  = cosmo_fmri_dataset(spm_path, 'mask', mask_fn);
-toc
 
 % Create a targets field, which is required by
 % cosmo_dissimilarity_matrix_measure. Each trial is a different
@@ -175,9 +173,7 @@ args.type       = 'Spearman';
 args.center     = 1;
 
 %%% Run Searchlight
-tic
 ds_sl = cosmo_searchlight(ds, nbrhood, measure, args);
-toc
 
 %%% Save Results of Searchlight
 searchlight_results_fn = fullfile(output_path, sprintf('sub-%s_trialtype_searchlight.nii', subjectID));
