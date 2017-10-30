@@ -1,4 +1,4 @@
-function [] = EstimateModel(Subjects)
+function [] = EstimateModel(number)
 % EstimateModel     function for estimating a GLM specified using the
 %                   SpecifyModel. Allows user to display the
 %                   trial type onsets/durations in the SPM Batch GUI
@@ -38,6 +38,8 @@ Mask.name = 'name_of_mask.img';
 
 %Subjects       = { '79o108'};%'69o277'  '75o320'  '70o316'  '81o312' ...
                   % '67o153'  '79o117' }';
+                  
+Subjects       = { '20y415' '20y441' '20y444' '21y437' '21y521' '22y422' '23y452' '25y543'}';
 
 % Please list the runs for the model in a 1 x N cell array.
          
@@ -75,7 +77,7 @@ fprintf('Gathering Data...\n\n')
 spm('Defaults','FMRI')
 spm_jobman('initcfg')
 
-for curSub = 1:length(Subjects)
+for curSub = number
 
     fprintf('\n')
     fprintf('Subject: %s\n\n',Subjects{curSub})

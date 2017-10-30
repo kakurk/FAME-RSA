@@ -37,10 +37,12 @@ Analysis.behav.directory  = '/gpfs/group/nad12/default/nad12/FAME8/Behav';
 
 % Please list the subjects to model in a 1 x N cell array.
 
-Subjects       = { '18y404'  '20y297'  '20y415'  '20y441'  '20y455' ... 
-                   '21y437'  '21y534'  '23y452'  '25y543'  '18y566' ... 
-                   '20y396'  '20y439'  '20y444'  '21y299'  '21y521' ...
-                   '22y422'  '23y546' }';
+% Subjects       = { '18y404'  '20y297'  '20y415'  '20y441'  '20y455' ... 
+%                    '21y437'  '21y534'  '23y452'  '25y543'  '18y566' ... 
+%                    '20y396'  '20y439'  '20y444'  '21y299'  '21y521' ...
+%                    '22y422'  '23y546' }';
+               
+Subjects       = { '20y415' '20y441' '20y444' '21y437' '21y521' '22y422' '23y452' '25y543'}';
 
 
 % User Input Step 3: Model Specifics
@@ -149,7 +151,7 @@ for indexS = 1:length(Subjects)
             end
             
             % trialtype
-            if BehavData.type(iIDX) == 1
+            if BehavData.type(iIDX) == 1 || BehavData.type(iIDX) == 2
                 trialtype        = 'target';
             elseif BehavData.type(iIDX) == 3
                 trialtype        = 'relatedLure';
