@@ -1,4 +1,4 @@
-function run_rsa(subject, ROI, targetDSMID)
+function run_rsa(iteration)
 % ROI-based MVPA analysis for a single subject
 %
 % Load single-trial beta images from each subject, apply ROI mask, calculate 
@@ -19,6 +19,28 @@ addpath([path filesep 'functions'])
 
 % turn cosmo warnings off
 cosmo_warning('off')
+
+subjects     = {'18y404','18y566','20y297','20y396','20y415','20y439','20y441','20y444','20y455','21y299','21y437','21y521','21y534','22y422','23y452','23y546','25y543'};
+
+rois         = {'rHC_bilat', 'rHC_left', 'rHC_right', 'rLTG_bilat', 'rLTG_left', 'roccip_bilat', 'rPHG_bilat', 'rSMA_bilat', 'rthal_bilat'};
+
+targetDSMIDs = 1:4;
+
+count = 0;
+for s = 1:length(subjects)
+    for r = 1:length(rois)
+        for t = targetDSMIDs
+            count = count + 1;
+            Combos(count).subject     = subjects{s};
+            Combos(count).ROI         = rois{r};
+            Combos(count).targetDSMID = t; 
+        end
+    end
+end
+
+subject     = Combos(iteration).subject;
+ROI         = Combos(iteration).ROI;
+targetDSMID = Combos(iteration).targetDSMID;
 
 %% Set analysis parameters
 
@@ -139,7 +161,7 @@ unrelLureFilt = ~cellfun(@isempty, strfind(ds.sa.labels, 'trialtype-unrealtedLur
 
 % response types
 rememberFilt  = ~cellfun(@isempty, strfind(ds.sa.labels, 'response-remember'));
-familarFilt   = ~cellfun(@isempty, strfind(ds.sa.labels, 'response-familar'));
+familarFilt   = ~cellfun(@isempty, strfind(ds.sa.labels, 'response-familiar'));
 newFilt       = ~cellfun(@isempty, strfind(ds.sa.labels, 'response-new'));
 nrFilt        = ~cellfun(@isempty, strfind(ds.sa.labels, 'response-nr'));
 
