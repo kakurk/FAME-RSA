@@ -11,7 +11,7 @@ function run_rsa(iteration)
 %% Pre analysis
 
 % Add CoSMoMVPA to the MATLAB search path
-addpath(genpath('/storage/home/kak53/CoSMoMVPA'))
+addpath(genpath('/gpfs/group/nad12/default/nad12/CoSMoMVPA-master/CoSMoMVPA-master'))
 
 % add the functions subfolder to the MATLAB search path
 path = fileparts(mfilename('fullpath'));
@@ -22,25 +22,26 @@ cosmo_warning('off')
 
 subjects     = {'18y404','18y566','20y297','20y396','20y415','20y439','20y441','20y444','20y455','21y299','21y437','21y521','21y534','22y422','23y452','23y546','25y543'};
 
-rois         = {'rHC_bilat', 'rHC_left', 'rHC_right', 'rLTG_bilat', 'rLTG_left', 'roccip_bilat', 'rPHG_bilat', 'rSMA_bilat', 'rthal_bilat'};
+rois         = {'rHC_bilat', 'rHC_left', 'rHC_right', 'rLTG_bilat', 'rLTG_left', 'rLTG_right', 'roccip_bilat', ...
+                'rPHG_bilat', 'rPHG_left','rPHG_right', 'rSMA_bilat', 'rthal_bilat', 'rearlyvis', 'rlatevis'};
 
-targetDSMIDs = 1:4;
+% initialize
+Combos(length(subjects) * length(rois)).subject = '';
+Combos(length(subjects) * length(rois)).ROI     = '';
 
+% all combinations
 count = 0;
 for s = 1:length(subjects)
     for r = 1:length(rois)
-        for t = targetDSMIDs
-            count = count + 1;
-            Combos(count).subject     = subjects{s};
-            Combos(count).ROI         = rois{r};
-            Combos(count).targetDSMID = t; 
-        end
+        count = count + 1;
+        Combos(count).subject     = subjects{s};
+        Combos(count).ROI         = rois{r};
     end
 end
 
+% this iteration
 subject     = Combos(iteration).subject;
 ROI         = Combos(iteration).ROI;
-targetDSMID = Combos(iteration).targetDSMID;
 
 %% Set analysis parameters
 
@@ -100,7 +101,7 @@ cosmo_check_dataset(ds);
 % cosmo_dissimilarity_matrix_measure, which has some nice
 % data organiziations features. NOTE: the output of this function
 % is a **dissimilarity** matrix of 1-r, which has values between -2 and 2
-%ds_dsm = cosmo_dissimilarity_matrix_measure(ds);
+ds_dsm = cosmo_dissimilarity_matrix_measure(ds);
 
 % There are two things to note about the outout of
 % cosmo_dissimilarity_matrix measure:
@@ -115,121 +116,172 @@ cosmo_check_dataset(ds);
 %   1 - r
 % So, in order to get the similarity matrix we are looking for, we
 % need to do (dsm - 1) * -1 AND convert it to matrix form
-%rho = (cosmo_squareform(ds_dsm.samples) - 1) * -1;
+rho = (cosmo_squareform(ds_dsm.samples) - 1) * -1;
 
 %% Display Pattern Similarity
 % display the resulting rho matrices
 
-% % visualize the rho matrix using imagesc
-% imagesc(rho);
-% 
-% % set axis labels
-% %   set axis labels by figuring out the half way mark for each
-% %   session
-% labelPositions = [];
-% for sess = 1:6
-%     firstID = find(~cellfun(@isempty, regexp(ds.sa.labels, ['Sn\(' num2str(sess) '\).*'])), 1, 'first');
-%     lastID  = find(~cellfun(@isempty, regexp(ds.sa.labels, ['Sn\(' num2str(sess) '\).*'])), 1, 'last');
-%     curlabelPosition = firstID + ceil((lastID - firstID)/2);
-%     labelPositions = horzcat(labelPositions, curlabelPosition);
-% end
-% set(gca, 'xtick', labelPositions, 'xticklabel', {'Sn(1)' 'Sn(2)' 'Sn(3)' 'Sn(4)' 'Sn(5)' 'Sn(6)'})
-% set(gca, 'ytick', labelPositions, 'yticklabel', {'Sn(1)' 'Sn(2)' 'Sn(3)' 'Sn(4)' 'Sn(5)' 'Sn(6)'})
-% 
-% % title
-% desc=sprintf(['Pattern Similarity among all trials for subject %s '...
-%                 'in roi ''%s'''], subjectID, regexprep(roi_label, '_', ' '));
-% title(desc)
-% 
-% % colorbar
-% colorbar('EastOutside');
-% 
-% %% Write rho matrix to Excel
-% filename = ['sub-' subjectID, '_roi-' roi_label '_psa-matix.xlsx'];
-% xlswrite(fullfile(output_path, filename), rho)
-% 
-% %% Save the MATLAB figure
-% filename = ['sub-' subjectID, '_roi-' roi_label '_psa-matrix.fig'];
-% saveas(gcf, fullfile(output_path, filename))
+% visualize the rho matrix using imagesc
+imagesc(rho);
 
-%% Compare Neural Pattern Similarity to Hypothesized Target DSM using a searchlight
+% set axis labels
+%   set axis labels by figuring out the half way mark for each
+%   session
+labelPositions = zeros(1, 6);
+for sess = 1:6
+    firstID = find(~cellfun(@isempty, regexp(ds.sa.labels, ['Sn\(' num2str(sess) '\).*'])), 1, 'first');
+    lastID  = find(~cellfun(@isempty, regexp(ds.sa.labels, ['Sn\(' num2str(sess) '\).*'])), 1, 'last');
+    curlabelPosition = firstID + ceil((lastID - firstID)/2);
+    labelPositions(sess) = curlabelPosition;
+end
+set(gca, 'xtick', labelPositions, 'xticklabel', {'Sn(1)' 'Sn(2)' 'Sn(3)' 'Sn(4)' 'Sn(5)' 'Sn(6)'})
+set(gca, 'ytick', labelPositions, 'yticklabel', {'Sn(1)' 'Sn(2)' 'Sn(3)' 'Sn(4)' 'Sn(5)' 'Sn(6)'})
 
-% memory trial types
+% title
+desc=sprintf(['Pattern Similarity among all trials for subject %s '...
+                'in roi ''%s'''], subject, regexprep(ROI, '_', ' '));
+title(desc)
+
+% colorbar
+colorbar('EastOutside');
+
+% Write rho matrix to Excel
+filename = ['sub-' subject, '_roi-' ROI '_psa-matix.xlsx'];
+xlswrite(fullfile(output_path, filename), rho)
+
+% Save the MATLAB figure
+filename = ['sub-' subject, '_roi-' ROI '_psa-matrix.fig'];
+saveas(gcf, fullfile(output_path, filename))
+
+%% Calculate averaged trial type matrices
+
+% memory trial types as boolean vectors
 tarFilt       = ~cellfun(@isempty, strfind(ds.sa.labels, 'trialtype-target'));
 relLureFilt   = ~cellfun(@isempty, strfind(ds.sa.labels, 'trialtype-relatedLure'));
 unrelLureFilt = ~cellfun(@isempty, strfind(ds.sa.labels, 'trialtype-unrealtedLure'));
 
-% response types
+% response types as boolean vectors
 rememberFilt  = ~cellfun(@isempty, strfind(ds.sa.labels, 'response-remember'));
 familarFilt   = ~cellfun(@isempty, strfind(ds.sa.labels, 'response-familiar'));
-newFilt       = ~cellfun(@isempty, strfind(ds.sa.labels, 'response-new'));
-nrFilt        = ~cellfun(@isempty, strfind(ds.sa.labels, 'response-nr'));
+%newFilt       = ~cellfun(@isempty, strfind(ds.sa.labels, 'response-new'));
+%nrFilt        = ~cellfun(@isempty, strfind(ds.sa.labels, 'response-nr'));
 
-%%% Target DSMs
+% behavior trial types as boolean vectors
+RecHitsFilt  = rememberFilt & tarFilt;
+FamHitsFilt  = familarFilt  & tarFilt;
+RecFAsFilt   = rememberFilt & (relLureFilt | unrelLureFilt);
+FamFAsFilt   = familarFilt  & (relLureFilt | unrelLureFilt);
 
-switch targetDSMID
-    
-    case 1
-        % Hypothesis tested: Rec Hits and Fam Hits are represented
-        % similarily AND are represented differently then all other trial
-        % types
-        RecHitsFilt  = rememberFilt & tarFilt;
-        FamHitsFilt  = familarFilt  & tarFilt;
-        combinedFilt = RecHitsFilt | FamHitsFilt;
-        
-    case 2
-        % Hypothesis tested: Rec FAs and Fam FAs are represented
-        % similarily AND are represented differently then all other trial
-        % types
-        RecFAsFilt   = rememberFilt & (relLureFilt | unrelLureFilt);
-        FamFAsFilt   = familarFilt  & (relLureFilt | unrelLureFilt);
-        combinedFilt = RecFAsFilt | FamFAsFilt;
-        
-    case 3
-        % Hypothesis tested: Rec Hits and Rec FAs are represented
-        % similarily AND are represented differently then all other trial
-        % types
-        RecHitsFilt  = rememberFilt & tarFilt;
-        RecFAsFilt   = rememberFilt & (relLureFilt | unrelLureFilt);
-        combinedFilt = RecHitsFilt | RecFAsFilt;
-        
-    case 4
-        % Hypothesis tested: Rec Hits and Fam Hits are represented
-        % similarily AND are represented differently then all other trial
-        % types
-        FamHitsFilt  = familarFilt  & tarFilt;
-        FamFAsFilt   = familarFilt  & (relLureFilt | unrelLureFilt);
-        combinedFilt = FamHitsFilt | FamFAsFilt;
-        
+% cell array of the behavior trial types
+AllTrialTypes = {RecHitsFilt, FamHitsFilt, RecFAsFilt, FamFAsFilt};
+
+% creating the average pattern similarity square matrix, see function
+% below
+trial_type_matrix = create_average_pattern_similarity_square_matrix(rho, AllTrialTypes);
+
+% visualize the trial_type_matrix matrix using imagesc
+imagesc(trial_type_matrix);
+
+% set axis labels
+%   set axis labels by figuring out the half way mark for each
+%   session
+set(gca, 'xtick', 1:4, 'xticklabel', {'RecHits' 'FamHits' 'RecFAs' 'FamFAs'})
+set(gca, 'ytick', 1:4, 'yticklabel', {'RecHits' 'FamHits' 'RecFAs' 'FamFAs'})
+
+% title
+desc=sprintf(['Average Pattern Similarity among select trials types for subject %s '...
+                'in roi ''%s'''], subject, regexprep(ROI, '_', ' '));
+title(desc)
+
+% colorbar
+colorbar('EastOutside');
+
+filename = ['sub-' subject, '_roi-' ROI '_trial-type-psa-matix.xlsx'];
+xlswrite(fullfile(output_path, filename), rho)
+
+filename = ['sub-' subject, '_roi-' ROI '_trial-type-psa-matrix.fig'];
+saveas(gcf, fullfile(output_path, filename))
+
+%% Create a tidyverse formatted table for final statistical analysis
+
+% Create TrialTypeCombo, a column that defines the trial-type similarity
+% comparison
+TrialTypeCombo = nchoosek({'RecHits' 'FamHits' 'RecFAs' 'FamFAs'}, 2);
+TrialTypeCombo = strcat(TrialTypeCombo(:, 1), {'-'}, TrialTypeCombo(:, 2));
+withins = strcat({'RecHits' 'FamHits' 'RecFAs' 'FamFAs'}', {'-'}, {'RecHits' 'FamHits' 'RecFAs' 'FamFAs'}');
+TrialTypeCombo = vertcat(TrialTypeCombo, withins);
+
+% Create correlation, self explanatory
+trial_type_matrix_without_the_daignol = trial_type_matrix;
+trial_type_matrix_without_the_daignol(logical(eye(4))) = 0;
+correlation = vertcat(squareform(trial_type_matrix_without_the_daignol)', diag(trial_type_matrix));
+
+% create subjectid and roiid columns
+subjectid   = repmat({subject}, length(TrialTypeCombo), 1);
+roiid       = repmat({ROI}, length(TrialTypeCombo), 1);
+
+% create the stats table
+stats_table = table(subjectid, roiid, TrialTypeCombo, correlation);
+
+% write the stats table
+filename = sprintf('sub-%s_roi-%s_statistics-table.csv', subject, ROI);
+writetable(stats_table, fullfile(output_path, filename))
+
+%% subfunctions
+
+function matrix = create_average_pattern_similarity_square_matrix(neural_pattern, trial_type_logical_vectors)
+
+
+    %% On diagnol
+
+    on_diagnol_averages = zeros(1, length(trial_type_logical_vectors));
+
+    for on = 1:length(trial_type_logical_vectors)
+
+        trial_type = trial_type_logical_vectors{on};
+
+        on_diagnol_averages(on) = average_neural_pattern_similarity(neural_pattern, trial_type, trial_type);
+
+    end
+
+    %% Off diagnol
+
+    off_diagnol_possibilites = nchoosek(1:length(trial_type_logical_vectors), 2);
+    off_diagnol_averages     = zeros(1, length(off_diagnol_possibilites));
+
+    for off = 1:length(off_diagnol_possibilites)
+
+        trial_type1 = trial_type_logical_vectors{off_diagnol_possibilites(off,1)};
+        trial_type2 = trial_type_logical_vectors{off_diagnol_possibilites(off,2)};
+
+        off_diagnol_averages(off) = average_neural_pattern_similarity(neural_pattern, trial_type1, trial_type2);
+
+    end
+
+    %% create matrix
+
+    diagnol    = diag(on_diagnol_averages);
+    offdiagnol = squareform(off_diagnol_averages);
+    matrix     = diagnol + offdiagnol;
+
+    %% subfunction
+
+    function average = average_neural_pattern_similarity(neural_pattern, logicalvector1, logicalvector2)
+        % average neural pattern similarity for between given trial types, denoted
+        % by logical vectors
+
+        % create a contrast matrix that weights the lower triangle of the
+        % neural pattern matrix by the number of unique trial pairs.
+        ContrastMatrix = tril(kron(logicalvector1, logicalvector2')) / length(find(tril(kron(logicalvector1, logicalvector2'))));
+
+        % Perform element multiplication to get a weighted matrix
+        WeightedMatrix = neural_pattern .* ContrastMatrix;
+
+        % Sum the elements of the WeightedMatrix to get the trial type
+        % average
+        average        = sum(WeightedMatrix(:)); 
+
+    end
 end
-
-% initalize target_dsm
-target_dsm   = kron(combinedFilt, combinedFilt');
-
-% exclude within run correlations
-within_run_dsm = false(length(ds.sa.chunks));
-for iChunk = unique(ds.sa.chunks)'
-    boolean_vector = ds.sa.chunks == iChunk;
-    within_run_dsm = within_run_dsm | kron(boolean_vector, boolean_vector');
-end
-target_dsm(within_run_dsm) = NaN;
-
-% force diagnol to be zeros
-target_dsm(logical(eye(size(target_dsm)))) = 0;
-
-%%% Compare neural DSM to Target DSM
-args.target_dsm = target_dsm;
-args.type       = 'Spearman';
-args.center     = 1;
-
-ds_results = cosmo_target_dsm_corr_measure(ds, args);
-
-%%% Save results to file
-correlation = ds_results.samples;
-subject     = {subject};
-ROI         = {ROI};
-results     = table(subject, ROI, targetDSMID, correlation);
-
-writetable(results, fullfile(output_path, sprintf('sub-%s_roi-%s_targetdsm-%d.csv', subject{1}, ROI{1}, targetDSMID)))
 
 end
