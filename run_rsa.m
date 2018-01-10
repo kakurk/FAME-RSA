@@ -1,9 +1,8 @@
 function run_rsa(iteration)
-% ROI-based MVPA analysis for a single subject
+% ROI-based RSA analysis for a single subject and single ROI
 %
 % Load single-trial beta images from each subject, apply ROI mask, calculate 
-% correlations between all trials, correlate neural dissimilarity matrix
-% with hypothesized target dissimilarity matrices
+% correlations between trial patterns, take the mean across trial types
 %
 % Written by Kyle Kurkela, kyleakurkela@gmail.com
 % August, 2017
@@ -20,8 +19,10 @@ addpath([path filesep 'functions'])
 % turn cosmo warnings off
 cosmo_warning('off')
 
+% subject ids
 subjects     = {'18y404','18y566','20y297','20y396','20y415','20y439','20y441','20y444','20y455','21y299','21y437','21y521','21y534','22y422','23y452','23y546','25y543'};
 
+% roi file names
 rois         = {'rHC_bilat', 'rHC_left', 'rHC_right', 'rLTG_bilat', 'rLTG_left', 'rLTG_right', 'roccip_bilat', ...
                 'rPHG_bilat', 'rPHG_left','rPHG_right', 'rSMA_bilat', 'rthal_bilat', 'rearlyvis', 'rlatevis'};
 
@@ -46,8 +47,6 @@ ROI         = Combos(iteration).ROI;
 %% Set analysis parameters
 
 % Parameters:
-%   rois                 = cell array of rois mask filenames. Assumes that
-%                          this ROI is in the roi_path directory.
 %   roi_path             = directory that holds the ROIs
 %   studypath            = directory that holds the Single Trial SPM model.
 roi_path             = '/gpfs/group/nad12/default/nad12/FAME8/RSA/ROIs';
@@ -79,8 +78,8 @@ end
 % full path to ROI mask
 mask_fn  = fullfile(roi_path, [ROI '.nii']);
 
-% load beta images, utilizing cosmo_frmi_dataset's ability to extract
-% infortmation from this subject's SPM.mat
+% load beta images, utilizing cosmo_fmri_dataset's ability to extract
+% information from this subject's SPM.mat
 ds  = cosmo_fmri_dataset(spm_path, 'mask', mask_fn);
 
 % Create a targets field, which is required by
@@ -97,14 +96,14 @@ cosmo_check_dataset(ds);
 % compute correlation values between all trials, resulting
 % in a nTrials x nTrials matrix, where each cell of the matrix represents
 % the correlation between the voxel patterns for each pair of
-% trials to do this, we are going to use cosmo's
+% trials. to do this, we are going to use cosmo's
 % cosmo_dissimilarity_matrix_measure, which has some nice
 % data organiziations features. NOTE: the output of this function
-% is a **dissimilarity** matrix of 1-r, which has values between -2 and 2
+% is a **dissimilarity** matrix of 1-r, which has values between -2 and 2.
 ds_dsm = cosmo_dissimilarity_matrix_measure(ds);
 
-% There are two things to note about the outout of
-% cosmo_dissimilarity_matrix measure:
+% There are two things to note about the output of
+% cosmo_dissimilarity_matrix_measure:
 %   1. It is a dissimilarity measure, 1-r
 %   2. It is in vector form, an arbitrary data format designed to
 %      save space and computation time
@@ -115,13 +114,14 @@ ds_dsm = cosmo_dissimilarity_matrix_measure(ds);
 % cosmo_dissimilarity_matrix_measure is:
 %   1 - r
 % So, in order to get the similarity matrix we are looking for, we
-% need to do (dsm - 1) * -1 AND convert it to matrix form
+% need to do (dsm - 1) * -1 AND convert it to matrix form:
 rho = (cosmo_squareform(ds_dsm.samples) - 1) * -1;
 
 %% Display Pattern Similarity
 % display the resulting rho matrices
 
-% visualize the rho matrix using imagesc
+% visualize the rho matrix using imagesc. NOTE: the trials are in
+% **chronological order**
 imagesc(rho);
 
 % set axis labels
@@ -149,11 +149,13 @@ colorbar('EastOutside');
 filename = ['sub-' subject, '_roi-' ROI '_psa-matix.xlsx'];
 xlswrite(fullfile(output_path, filename), rho)
 
-% Save the MATLAB figure
+% Save this MATLAB figure
 filename = ['sub-' subject, '_roi-' ROI '_psa-matrix.fig'];
 saveas(gcf, fullfile(output_path, filename))
 
 %% Calculate averaged trial type matrices
+% Take advantage of the nice trial labeling to parse trials into trial
+% types.
 
 % memory trial types as boolean vectors
 tarFilt       = ~cellfun(@isempty, strfind(ds.sa.labels, 'trialtype-target'));
@@ -172,7 +174,7 @@ FamHitsFilt  = familarFilt  & tarFilt;
 RecFAsFilt   = rememberFilt & (relLureFilt | unrelLureFilt);
 FamFAsFilt   = familarFilt  & (relLureFilt | unrelLureFilt);
 
-% cell array of the behavior trial types
+% cell array of the behavior trial types boolean vectors
 AllTrialTypes = {RecHitsFilt, FamHitsFilt, RecFAsFilt, FamFAsFilt};
 
 % creating the average pattern similarity square matrix, see function
@@ -183,8 +185,6 @@ trial_type_matrix = create_average_pattern_similarity_square_matrix(rho, AllTria
 imagesc(trial_type_matrix);
 
 % set axis labels
-%   set axis labels by figuring out the half way mark for each
-%   session
 set(gca, 'xtick', 1:4, 'xticklabel', {'RecHits' 'FamHits' 'RecFAs' 'FamFAs'})
 set(gca, 'ytick', 1:4, 'yticklabel', {'RecHits' 'FamHits' 'RecFAs' 'FamFAs'})
 
@@ -196,9 +196,11 @@ title(desc)
 % colorbar
 colorbar('EastOutside');
 
+% excel spreadsheet of the means correlation values
 filename = ['sub-' subject, '_roi-' ROI '_trial-type-psa-matix.xlsx'];
 xlswrite(fullfile(output_path, filename), rho)
 
+% matlab .fig
 filename = ['sub-' subject, '_roi-' ROI '_trial-type-psa-matrix.fig'];
 saveas(gcf, fullfile(output_path, filename))
 
