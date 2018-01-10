@@ -160,7 +160,7 @@ saveas(gcf, fullfile(output_path, filename))
 % memory trial types as boolean vectors
 tarFilt       = ~cellfun(@isempty, strfind(ds.sa.labels, 'trialtype-target'));
 relLureFilt   = ~cellfun(@isempty, strfind(ds.sa.labels, 'trialtype-relatedLure'));
-unrelLureFilt = ~cellfun(@isempty, strfind(ds.sa.labels, 'trialtype-unrealtedLure'));
+% unrelLureFilt = ~cellfun(@isempty, strfind(ds.sa.labels, 'trialtype-unrealtedLure'));
 
 % response types as boolean vectors
 rememberFilt  = ~cellfun(@isempty, strfind(ds.sa.labels, 'response-remember'));
@@ -171,8 +171,8 @@ familarFilt   = ~cellfun(@isempty, strfind(ds.sa.labels, 'response-familiar'));
 % behavior trial types as boolean vectors
 RecHitsFilt  = rememberFilt & tarFilt;
 FamHitsFilt  = familarFilt  & tarFilt;
-RecFAsFilt   = rememberFilt & (relLureFilt | unrelLureFilt);
-FamFAsFilt   = familarFilt  & (relLureFilt | unrelLureFilt);
+RecFAsFilt   = rememberFilt & relLureFilt;
+FamFAsFilt   = familarFilt  & relLureFilt;
 
 % cell array of the behavior trial types boolean vectors
 AllTrialTypes = {RecHitsFilt, FamHitsFilt, RecFAsFilt, FamFAsFilt};
