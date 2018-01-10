@@ -198,7 +198,7 @@ colorbar('EastOutside');
 
 % excel spreadsheet of the means correlation values
 filename = ['sub-' subject, '_roi-' ROI '_trial-type-psa-matix.xlsx'];
-xlswrite(fullfile(output_path, filename), rho)
+xlswrite(fullfile(output_path, filename), trial_type_matrix)
 
 % matlab .fig
 filename = ['sub-' subject, '_roi-' ROI '_trial-type-psa-matrix.fig'];
