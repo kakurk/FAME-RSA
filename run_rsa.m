@@ -274,7 +274,8 @@ function matrix = create_average_pattern_similarity_square_matrix(neural_pattern
 
         % create a contrast matrix that weights the lower triangle of the
         % neural pattern matrix by the number of unique trial pairs.
-        ContrastMatrix = tril(kron(logicalvector1, logicalvector2')) / length(find(tril(kron(logicalvector1, logicalvector2'))));
+        lowerTriangle  = tril(kron(logicalvector1, logicalvector2'), -1);
+        ContrastMatrix = lowerTriangle / length(find(lowerTriangle));
 
         % Perform element multiplication to get a weighted matrix
         WeightedMatrix = neural_pattern .* ContrastMatrix;
