@@ -3,11 +3,11 @@
 #  
 #PBS -l nodes=1:ppn=1
 #
-#   Request 8 hours of walltime
+#   Request 2 hours of walltime
 #
-#PBS -l walltime=6:00:00
+#PBS -l walltime=2:00:00
 #
-#   Request 8 gigabyte of memory per process
+#   Request 4 gigabyte of memory per process
 #
 #PBS -l pmem=4gb
 #
@@ -17,9 +17,9 @@
 #
 #   Loop 17 times
 #
-#PBS -t 361-432
+#PBS -t 101-184
 
 module load matlab
-cd /gpfs/group/nad12/default/nad12/FAME8/RSA/scripts
+cd /gpfs/group/nad12/default/nad12/FAME8/RSA/updated-scripts
 matlab-bin -nodisplay -nosplash -r "run_rsa(${PBS_ARRAYID});"
 

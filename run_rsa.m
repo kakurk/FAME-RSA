@@ -20,11 +20,15 @@ addpath([path filesep 'functions'])
 cosmo_warning('off')
 
 % subject ids
-subjects     = {'18y404','18y566','20y297','20y396','20y415','20y439','20y441','20y444','20y455','21y299','21y437','21y521','21y534','22y422','23y452','23y546','25y543'};
+subjects = {'67o136','67o153','67o178','69o144','69o277','70o118','70o316','71o152','71o193','72o164','73o165','75o320','76o120','76o162','78o113','79o108','79o117','79o279','80o121','80o128','81o125','81o312','83o197'};
+% subjects     = {'18y404','18y566','20y297','20y396','20y415','20y439','20y441','20y444','20y455','21y299','21y437','21y521','21y534','22y422','23y452','23y546','25y543'};
 
 % roi file names
-rois         = {'rHC_bilat', 'rHC_left', 'rHC_right', 'rLTG_bilat', 'rLTG_left', 'rLTG_right', 'roccip_bilat', ...
-                'rPHG_bilat', 'rPHG_left','rPHG_right', 'rSMA_bilat', 'rthal_bilat', 'rearlyvis', 'rlatevis'};
+% rois         = {'rHC_bilat', 'rHC_left', 'rHC_right', 'rLTG_bilat', 'rLTG_left', 'rLTG_right', 'roccip_bilat', ...
+%                 'rPHG_bilat', 'rPHG_left','rPHG_right', 'rSMA_bilat', 'rthal_bilat', 'rearlyvis', 'rlatevis'};
+            
+rois         = {'rfRemHvRemRFA_005_10_binary' 'rRemHvRemFA_vis_extended' 'rYvO_RHvRFA_lvis' 'rYvO_RHvRFA_rvis' 'rearlyvisleft' 'rearlyvisright'...
+                'rlatevisleft' 'rlatevisright'};
 
 % initialize
 Combos(length(subjects) * length(rois)).subject = '';
@@ -56,7 +60,7 @@ study_path           = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/model
 
 % path to save results into
 parentDir   = fileparts(study_path);
-out_path    = fullfile(parentDir, 'RSA_Results');
+out_path    = fullfile(parentDir, 'Updated_RSA_Results');
 
 % This subject's:
 %   data_path   = fullpath to this subject's Single Trial Model directory
