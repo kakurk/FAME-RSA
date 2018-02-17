@@ -3,9 +3,9 @@
 #  
 #PBS -l nodes=1:ppn=1
 #
-#   Request 2 hours of walltime
+#   Request 8 hours of walltime
 #
-#PBS -l walltime=2:00:00
+#PBS -l walltime=8:00:00
 #
 #   Request 4 gigabyte of memory per process
 #
@@ -17,9 +17,9 @@
 #
 #   Loop 17 times
 #
-#PBS -t 101-184
+#PBS -t 1-40
 
 module load matlab
 cd /gpfs/group/nad12/default/nad12/FAME8/RSA/updated-scripts
-matlab-bin -nodisplay -nosplash -r "run_rsa(${PBS_ARRAYID});"
+matlab-bin -nodisplay -nosplash -r "EstimateModel(${PBS_ARRAYID});"
 

@@ -1,4 +1,4 @@
-function [] = SpecifyModel()
+function [] = SpecifyEncodingModel()
 % SpecifyModel      function designed to build multiple conditions files
 %                   for later use with SPM's matlabbatch system
 %
@@ -28,7 +28,7 @@ function [] = SpecifyModel()
 % current analysis is in, and the directoy which houses the behavioral
 % data.
 
-Analysis.name             = 'SingleTrialModel';
+Analysis.name             = 'SingleTrialEncodingModel';
 Analysis.directory        = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models', Analysis.name);
 Analysis.behav.directory  = '/gpfs/group/nad12/default/nad12/FAME8/Behav';
 
@@ -42,14 +42,15 @@ Analysis.behav.directory  = '/gpfs/group/nad12/default/nad12/FAME8/Behav';
 %                    '20y396'  '20y439'  '20y444'  '21y299'  '21y521' ...
 %                    '22y422'  '23y546' }';
                
-Subjects       = { '20y415' '20y441' '20y444' '21y437' '21y521' '22y422' '23y452' '25y543'}';
-
+Subjects       = { '67o136' '67o153' '67o178' '69o144' '69o277' '70o118' '70o316' '71o152' ...
+                   '71o193' '72o164' '73o165' '75o320' '76o120' '76o162' '78o113' '79o108' ...
+                   '79o117' '79o279' '80o121' '80o128' '81o125' '81o312' '83o197'}';
 
 % User Input Step 3: Model Specifics
 
 % - Behavioral File Regular Expression
 
-Analysis.behav.regexp         = '.*ret.xls$';
+Analysis.behav.regexp         = '.*\wencDM.xls$';
 
 %% Routine
 
@@ -118,7 +119,7 @@ for indexS = 1:length(Subjects)
 
         % the raw onset column for this run divided by 1000 to put it in
         % seconds
-        onsets    = num2cell(BehavData.RAWONSET(BehavData.runID == curRun)/1000)';
+        onsets    = num2cell(BehavData.RAWONSET(BehavData.runID == curRun)/1000)'; %#ok<*NASGU>
         
         % zero for each trial, a stick function
         number_of_trials_in_this_run = length(find(BehavData.runID == curRun));
@@ -135,6 +136,10 @@ for indexS = 1:length(Subjects)
             
             %%% pull variables to add to the trial file name
             
+            % image name
+            imagename = regexp(BehavData.image(iIDX), '(?<=S\\).*\.[Jj][Pp][Ee]?[Gg]', 'match');
+            imagename = strtrim(imagename{1}{:});
+            
             % visual category
             visual_category = regexp(BehavData.image(iIDX), '(?<=\\)[a-z]+', 'match');
             visual_category = strtrim(visual_category{1}{:});
@@ -143,32 +148,28 @@ for indexS = 1:length(Subjects)
             if BehavData.response(iIDX) == 0
                 response        = 'nr';
             elseif BehavData.response(iIDX) == 28
-                response        = 'remember';
+                response        = 'verypleasent';
             elseif BehavData.response(iIDX) == 29
-                response        = 'familiar';
+                response        = 'pleasent';
             elseif BehavData.response(iIDX) == 30
-                response        = 'new';
+                response        = 'unpleasent';
+            elseif BehavData.response(iIDX) == 31
+                response        = 'veryunpleasent';
             end
             
-            % trialtype
-            if BehavData.type(iIDX) == 1 || BehavData.type(iIDX) == 2
-                trialtype        = 'target';
-            elseif BehavData.type(iIDX) == 3
-                trialtype        = 'relatedLure';
-            elseif BehavData.type(iIDX) == 4
-                trialtype        = 'unrelatedLure';
-            end
+            % gistPosition
+            gistPosition = BehavData.GIST(iIDX);
             
             % enctype
-            if BehavData.encType(iIDX) == 1
+            if BehavData.BLSC(iIDX) == 1
                 enctype        = 'blocked';
-            elseif BehavData.encType(iIDX) == 2
+            elseif BehavData.BLSC(iIDX) == 2
                 enctype        = 'scrambled';
             end
             
             % informative, unique, BIDS style trial name
-            names{i} = sprintf('visualcategory-%s_response-%s_trialtype-%s_enctype-%s', visual_category, response, trialtype, enctype);
-        
+            names{i} = sprintf('imagename-%s_visualcategory-%s_response-%s_gistPosition-%d_enctype-%s', imagename, visual_category, response, gistPosition, enctype);
+            
         end
         
         %-- Save the Multiple Conditions *.mat file
