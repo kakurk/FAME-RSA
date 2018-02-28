@@ -16,7 +16,7 @@ addpath(genpath('/gpfs/group/nad12/default/nad12/spm12'))
 % current analysis is in, and the directoy which houses the behavioral
 % data.
 
-Analysis.name = 'SingleTrialEncodingModel';
+Analysis.name = 'SingleTrialModel';
 Analysis.dir  = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models', Analysis.name);
 
 Func.dir         = '/gpfs/group/nad12/default/nad12/FAME8/Func_enc';

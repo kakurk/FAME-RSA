@@ -42,14 +42,16 @@ Analysis.behav.directory  = '/gpfs/group/nad12/default/nad12/FAME8/Behav';
 %                    '20y396'  '20y439'  '20y444'  '21y299'  '21y521' ...
 %                    '22y422'  '23y546' }';
                
-Subjects       = { '20y415' '20y441' '20y444' '21y437' '21y521' '22y422' '23y452' '25y543'}';
+Subjects       = { '67o136' '67o153' '67o178' '69o144' '69o277' '70o118' '70o316' '71o152' ...
+                   '71o193' '72o164' '73o165' '75o320' '76o120' '76o162' '78o113' '79o108' ...
+                   '79o117' '79o279' '80o121' '80o128' '81o125' '81o312' '83o197'}';
 
 
 % User Input Step 3: Model Specifics
 
 % - Behavioral File Regular Expression
 
-Analysis.behav.regexp         = '.*ret.xls$';
+Analysis.behav.regexp         = '.*[0-9]ret.xls$';
 
 %% Routine
 
@@ -135,6 +137,10 @@ for indexS = 1:length(Subjects)
             
             %%% pull variables to add to the trial file name
             
+            % imagename
+            imagename = regexp(BehavData.image(iIDX), '(?<=S\\).*\.[Jj][Pp][Ee]?[Gg]', 'match');
+            imagename = strtrim(imagename{1}{:});
+            
             % visual category
             visual_category = regexp(BehavData.image(iIDX), '(?<=\\)[a-z]+', 'match');
             visual_category = strtrim(visual_category{1}{:});
@@ -167,7 +173,7 @@ for indexS = 1:length(Subjects)
             end
             
             % informative, unique, BIDS style trial name
-            names{i} = sprintf('visualcategory-%s_response-%s_trialtype-%s_enctype-%s', visual_category, response, trialtype, enctype);
+            names{i} = sprintf('imagename-%s_visualcategory-%s_response-%s_trialtype-%s_enctype-%s', imagename, visual_category, response, trialtype, enctype);
         
         end
         
