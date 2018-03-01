@@ -86,6 +86,9 @@ ds_stacked = cosmo_stack({ds_enc ds_ret});
 % cosmo_remove_useless_data removes the NaNs from the data                                 
 ds_stacked = cosmo_remove_useless_data(ds_stacked);
 
+% the number of unque targets MUST be equal to the number of targets/2
+assert(length(unique(ds_stacked.sa.targets)) == length(ds_stacked.sa.targets) / 2)
+
 % cosmo check to make sure data in right format
 cosmo_check_dataset(ds_stacked);
 
@@ -127,10 +130,10 @@ function [trialmatch1, trialmatch2] = match_trials(triallabels1, triallabels2)
        iTrial_imagefilename = cellfun(@(x) x, regexp(triallabels1{t1}, '(?<=imagename-).*(?=_visualcategory)', 'match'), 'UniformOutput', false);
 
        % where it is in the first dataset
-       triallabels1Filt = ~cellfun(@isempty, strfind(triallabels1, iTrial_imagefilename));
+       triallabels1Filt = ~cellfun(@isempty, strfind(triallabels1, strcat('-', iTrial_imagefilename, '_')));
        
        % where it is in the second dataset
-       triallabels2Filt = ~cellfun(@isempty, strfind(triallabels2, iTrial_imagefilename));
+       triallabels2Filt = ~cellfun(@isempty, strfind(triallabels2, strcat('-', iTrial_imagefilename, '_')));
        
        % label them both. If there isn't a match in the second cellstring,
        % continue the loop
@@ -138,6 +141,7 @@ function [trialmatch1, trialmatch2] = match_trials(triallabels1, triallabels2)
             c = c + 1;
             trialmatch1(triallabels1Filt) = c;
             trialmatch2(triallabels2Filt) = c;
+            assert(trialmatch1(triallabels1Filt) == trialmatch2(triallabels2Filt))
        end
        
    end
