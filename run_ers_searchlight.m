@@ -34,7 +34,7 @@ glm_path = '/gpfs/group/nad12/default/nad12/FAME8/RSA/models';
 
 % Encoding Single Trial Model (STM) path. Full path to this subject's 
 % single trial encoding model.
-encoding_STM_path  = fullfile(glm_path, 'SingleTrialEncodingModel', subject, 'SPM.mat:beta');
+encoding_STM_path  = fullfile(glm_path, 'GistEncodingModel', subject, 'SPM.mat:beta');
 
 % Retrieval Single Trial Model (STM) path. Full path to this subject's
 % single trial retrieval model.
