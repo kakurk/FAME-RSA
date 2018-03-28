@@ -28,7 +28,7 @@ function [] = SpecifyGistEncModel2(i)
 % current analysis is in, and the directoy which houses the behavioral
 % data.
 
-Analysis.name             = 'GistEncodingModel';
+Analysis.name             = 'GistEncodingModel2';
 Analysis.directory        = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models', Analysis.name);
 Analysis.behav.directory  = '/gpfs/group/nad12/default/nad12/FAME8/Behav';
  
@@ -147,14 +147,11 @@ for indexS = i%1:length(Subjects)
             for Categories = 1:93
                 indexTT=indexTT+1;
                 if curcat == Categories
-%                     visual_category = regexp(BehavData.image(indexTT), '(?<=\\)[a-z]+', 'match');
-%                     visual_category = strtrim(visual_category{1}{:});
-                    catID= BehavData.catID(curTrial);
-                    catID = num2str(catID);
-                    catID = strtrim(catID);
+                    visual_category = regexp(BehavData.image(curTrial), '(?<=\\)[a-z]+', 'match');
+                    visual_category = strtrim(visual_category{1}{:});
                     
                     counter(curRun,indexTT)                     = counter(curRun,indexTT)+1;
-                    names{indexTT}                              = sprintf('catID-%s',catID);
+                    names{indexTT}                              = sprintf('visual_category-%s', visual_category);
                     onsets{indexTT}(counter(curRun,indexTT))    = rawonset/1000;
                     durations{indexTT}(counter(curRun,indexTT)) = 0;
                 end
