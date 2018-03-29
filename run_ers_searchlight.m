@@ -42,7 +42,7 @@ retrieval_STM_path = fullfile(glm_path, 'SingleTrialModel', subject, 'SPM.mat:be
 
 % Output path. Directory where we are going to save the results. For now,
 % we will put it in `glm_path` in a subject subfolder
-output_path    = fullfile(glm_path, 'ERS_results');
+output_path    = fullfile(glm_path, 'ERS_results_diagnol');
 
 % create the output path if it doesn't already exist
 if ~exist(output_path, 'dir')
