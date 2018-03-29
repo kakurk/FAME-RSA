@@ -21,5 +21,4 @@
 
 module load matlab
 cd /gpfs/group/nad12/default/nad12/FAME8/RSA/updated-scripts
-matlab-bin -nodisplay -nosplash -r "run_ers(${PBS_ARRAYID});"
-
+matlab -nodisplay -nosplash -r "run_ers_searchlight(${PBS_ARRAYID});"
