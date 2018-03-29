@@ -34,7 +34,7 @@ glm_path = '/gpfs/group/nad12/default/nad12/FAME8/RSA/models';
 
 % Encoding Single Trial Model (STM) path. Full path to this subject's 
 % single trial encoding model.
-encoding_STM_path  = fullfile(glm_path, 'GistEncodingModel', subject, 'SPM.mat:beta');
+encoding_STM_path  = fullfile(glm_path, 'SingleTrialEncodingModel', subject, 'SPM.mat:beta');
 
 % Retrieval Single Trial Model (STM) path. Full path to this subject's
 % single trial retrieval model.
@@ -92,18 +92,22 @@ assert(length(unique(ds_stacked.sa.targets)) == length(ds_stacked.sa.targets) / 
 % cosmo check to make sure data in right format
 cosmo_check_dataset(ds_stacked);
 
+% create a template matrix for @kyles_cosmo_ers_measure
+template_matrix = diag(ones(1, 270)) / 270;
+
 % Use cosmo_correlation_measure.
 % This measure returns, by default, a split-half correlation measure
 % based on the difference of mean correlations for matching and
 % non-matching conditions (a la Haxby 2001).
-measure=@cosmo_correlation_measure;
+measure=@kyles_cosmo_ers_measure;
+args.template = template_matrix;
 
 % define spherical neighborhood with radius of 3 voxels
 radius=3; % voxels
 nbrhood=cosmo_spherical_neighborhood(ds_stacked,'radius',radius);
 
 % Run the searchlight with a 3 voxel radius
-corr_results=cosmo_searchlight(ds_stacked, nbrhood, measure);
+corr_results=cosmo_searchlight(ds_stacked, nbrhood, measure, args);
 
 % Define output location
 outfilename = sprintf('sub-%s_ers_searchight.nii', subject);
