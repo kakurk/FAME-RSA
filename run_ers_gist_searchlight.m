@@ -1,4 +1,4 @@
-function run_ers(iteration, varargin)
+function run_ers_gist_searchlight(iteration, varargin)
 % ROI-based RSA analysis for a single subject and single ROI
 %
 % Load single-trial beta images from each subject, apply ROI mask, calculate 
@@ -65,16 +65,30 @@ end
 % targets**
 ds_ret = cosmo_slice(ds_ret, ~cellfun(@isempty, strfind(ds_ret.sa.labels, 'trialtype-target'))); % only targets
 
-% we need to match encoding with retrieval
-[ds_enc.sa.targets, ds_ret.sa.targets] = match_trials(ds_enc.sa.labels, ds_ret.sa.labels);
-
-% slice the encoding dataset. Remove all trials that did NOT have a match
-% at retrieval (i.e., were not brought to retrieval).
-ds_enc = cosmo_slice(ds_enc, ~isnan(ds_enc.sa.targets));
-
 % add a chunks field to both datasets
 ds_enc.sa.chunks = ones(size(ds_enc.samples, 1), 1);
 ds_ret.sa.chunks = repmat(2, size(ds_ret.samples, 1), 1);
+
+% match trials. Each sample is a trial pattern. We want to sort the trials
+% so that they match up nicely.
+
+    % encoding
+    ds_enc.sa.visual_categories = cellfun(@(x) x{:}, regexp(ds_enc.sa.labels, '(?<=visual_category-).*(?=*)', 'match'), 'UniformOutput', false);
+    [~, I]                      = sort(ds_enc.sa.visual_categories);
+    ds_enc.sa.visual_categories = ds_enc.sa.visual_categories(I);
+    ds_enc.sa.chunks            = ds_enc.sa.chunks(I);
+    ds_enc.sa.fname             = ds_enc.sa.fname(I);
+    ds_enc.sa.labels            = ds_enc.sa.labels(I);
+    ds_enc.samples              = ds_enc.samples(I, :);
+
+    % retrieval
+    ds_ret.sa.visual_categories = cellfun(@(x) x{:}, regexp(ds_ret.sa.labels, '(?<=visualcategory-).*(?=_response)', 'match'), 'UniformOutput', false);
+    [~, I]                      = sort(ds_ret.sa.visual_categories);
+    ds_ret.sa.visual_categories = ds_ret.sa.visual_categories(I);
+    ds_ret.sa.chunks            = ds_ret.sa.chunks(I);
+    ds_ret.sa.fname             = ds_ret.sa.fname(I);
+    ds_ret.sa.labels            = ds_ret.sa.labels(I);
+    ds_ret.samples              = ds_ret.samples(I, :);
 
 % stack the datasets
 ds_stacked = cosmo_stack({ds_enc ds_ret});
@@ -85,8 +99,10 @@ ds_stacked = cosmo_remove_useless_data(ds_stacked);
 % cosmo check to make sure data in right format
 cosmo_check_dataset(ds_stacked);
 
-% create a template matrix for @cosmo_correlation_measure
-template_matrix = diag(ones(1, 270)) / 270;
+% create a template matrix for kyles measure function. See subfunction
+% below.
+template_matrix = create_custom_template_matrix(ds_enc, ds_ret);
+template_matrix = template_matrix / length(find(template_matrix)); 
 
 % Use cosmo_correlation_measure.
 % This measure returns, by default, a split-half correlation measure
@@ -111,39 +127,37 @@ cosmo_map2fmri(corr_results, outputfile);
 
 %% subfunctions
 
-function [trialmatch1, trialmatch2] = match_trials(triallabels1, triallabels2)
-   % match_trials  match trials in cellstr1 with those in cellstring 2
-   % and create two output arrays that match the two. `cellstr1match`
-   % and `cellstr2match` are the same length as cellstr1 and cellstr2.
+function contrast_matrix = create_custom_template_matrix(ds_enc, ds_ret)
+% custom template matrix
+    
+    % extract the encoding labels
+    enc_labels     = ds_enc.sa.labels;
 
-   trialmatch1 = NaN(length(triallabels1), 1);
-   trialmatch2 = NaN(length(triallabels2) ,1);
+    % extract the encoding categories
+    enc_categories = cellfun(@(x) x{:}, regexp(enc_labels, '(?<=visual_category-).*(?=*)', 'match'), 'UniformOutput', false);
 
-   c = 0;
-   
-   for t1 = 1:length(triallabels1)
-       
-       % filename to search for
-       iTrial_visualcat = cellfun(@(x) x, regexp(triallabels1{t1}, '(?<=visual_category-).*(?=\*bf)', 'match'), 'UniformOutput', false);
+    % extract the retrieval labels
+    ret_labels     = ds_ret.sa.labels;
 
-       % where it is in the first dataset
-       triallabels1Filt = ~cellfun(@isempty, strfind(triallabels1, strcat('-', iTrial_visualcat, '*')));
-       
-       % where it is in the second dataset
-       triallabels2Filt = ~cellfun(@isempty, strfind(triallabels2, strcat('-', iTrial_visualcat, '_')));
-       
-       % label them both. If there isn't a match in the second cellstring,
-       % continue the loop
-       if ~isempty(find(triallabels2Filt, 1))
-            c = c + 1;
-            trialmatch1(triallabels1Filt) = c;
-            trialmatch2(triallabels2Filt) = c;
-       end
-       
-   end
+    % extract the retrieval categories
+    ret_categories = cellfun(@(x) x{:}, regexp(ret_labels, '(?<=visualcategory-).*(?=_response)', 'match'), 'UniformOutput', false);
 
+    contrast_matrix = zeros(length(enc_labels), length(ret_labels));
+
+    for e = 1:length(enc_categories)
+
+        currentCategory = enc_categories{e};
+
+        logicvector1    = strcmp(currentCategory, enc_categories);
+        logicvector2    = strcmp(currentCategory, ret_categories);
+
+        tmpmatrix       = kron(logicvector1, logicvector2');
+        contrast_matrix = tmpmatrix + contrast_matrix;
+
+    end
+
+    figure; imagesc(contrast_matrix);
 
 end
-
 
 end
