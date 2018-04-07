@@ -10,7 +10,7 @@ function run_ers_gist_searchlight(iteration, varargin)
 %% Pre analysis
 
 % Add CoSMoMVPA to the MATLAB search path
-addpath(genpath('/gpfs/group/nad12/default/nad12/CoSMoMVPA-master/CoSMoMVPA-master'))
+%addpath(genpath('/gpfs/group/nad12/default/nad12/CoSMoMVPA-master/CoSMoMVPA-master'))
 
 % add the functions subfolder to the MATLAB search path
 path = fileparts(mfilename('fullpath'));
@@ -45,9 +45,9 @@ retrieval_STM_path = fullfile(glm_path, 'SingleTrialModel', subject, 'SPM.mat:be
 output_path    = fullfile(glm_path, 'ERS_results');
 
 % create the output path if it doesn't already exist
-if ~exist(output_path, 'dir')
-    mkdir(output_path)
-end
+% if ~exist(output_path, 'dir')
+%     mkdir(output_path)
+% end
 
 %% Pattern Similarity Matrices
 
@@ -108,8 +108,10 @@ template_matrix = template_matrix / length(find(template_matrix));
 % This measure returns, by default, a split-half correlation measure
 % based on the difference of mean correlations for matching and
 % non-matching conditions (a la Haxby 2001).
-measure=@kyles_cosmo_ers_measure;
-args.template = template_matrix;
+measure=@correlation_summary_measure;
+args.template       = template_matrix;
+args.corr_type      = 'spearman';
+args.post_corr_func = @atanh;
 
 % define spherical neighborhood with radius of 3 voxels
 radius=3; % voxels
