@@ -10,7 +10,7 @@ function run_ers_gist_searchlight(iteration, varargin)
 %% Pre analysis
 
 % Add CoSMoMVPA to the MATLAB search path
-%addpath(genpath('/gpfs/group/nad12/default/nad12/CoSMoMVPA-master/CoSMoMVPA-master'))
+addpath(genpath('/gpfs/group/nad12/default/nad12/CoSMoMVPA-master/CoSMoMVPA-master'))
 
 % add the functions subfolder to the MATLAB search path
 path = fileparts(mfilename('fullpath'));
@@ -45,9 +45,9 @@ retrieval_STM_path = fullfile(glm_path, 'SingleTrialModel', subject, 'SPM.mat:be
 output_path    = fullfile(glm_path, 'ERS_results');
 
 % create the output path if it doesn't already exist
-% if ~exist(output_path, 'dir')
-%     mkdir(output_path)
-% end
+if ~exist(output_path, 'dir')
+    mkdir(output_path)
+end
 
 %% Pattern Similarity Matrices
 
@@ -104,10 +104,10 @@ cosmo_check_dataset(ds_stacked);
 template_matrix = create_custom_template_matrix(ds_enc, ds_ret);
 template_matrix = template_matrix / length(find(template_matrix)); 
 
-% Use cosmo_correlation_measure.
-% This measure returns, by default, a split-half correlation measure
-% based on the difference of mean correlations for matching and
-% non-matching conditions (a la Haxby 2001).
+% Use kyle's correlation__summary_measure.
+% This measure returns a summary value which is the sum of the weighted 
+% correlation matrix. Also need to define a post correlation function
+% and the type of correlation to use. See correlation_summary_measure.m
 measure=@correlation_summary_measure;
 args.template       = template_matrix;
 args.corr_type      = 'spearman';
