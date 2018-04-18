@@ -5,7 +5,7 @@
 #
 #   Request 4 hours of walltime
 #
-#PBS -l walltime=4:00:00
+#PBS -l walltime=8:00:00
 #
 #   Request 4 gigabyte of memory per process
 #
@@ -21,4 +21,4 @@
 
 module load matlab
 cd /gpfs/group/nad12/default/nad12/FAME8/RSA/updated-scripts
-matlab -nodisplay -nosplash -r "run_ers_searchlight(${PBS_ARRAYID});"
+matlab -nodisplay -nosplash -r "run_ers_gist_searchlight(${PBS_ARRAYID});"
