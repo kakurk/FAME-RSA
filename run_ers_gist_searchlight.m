@@ -23,8 +23,25 @@ cosmo_warning('off')
 % subjects = {'67o136','67o153','67o178','69o144','69o277','70o118','70o316','71o152','71o193','72o164','73o165','75o320','76o120','76o162','78o113','79o108','79o117','79o279','80o121','80o128','81o125','81o312','83o197'};
 subjects     = {'18y404','18y566','20y297','20y396','20y415','20y439','20y441','20y444','20y455','21y299','21y437','21y521','21y534','22y422','23y452','23y546','25y543','67o136','67o153','67o178','69o144','69o277','70o118','70o316','71o152','71o193','72o164','73o165','75o320','76o120','76o162','78o113','79o108','79o117','79o279','80o121','80o128','81o125','81o312','83o197'};
 
+% memory trial types
+memtrialtypes = {'RecHits' 'FamHits' 'Misses' 'RelRecFAs' 'RelFamFAs' 'RelCRs'};
+
+% Combinations
+Combos(length(subjects) * length(memtrialtypes)).subject = cell(1);
+Combos(length(subjects) * length(memtrialtypes)).memtrialtype = cell(1);
+
+sm = 0;
+for s = 1:length(subjects)
+    for m = 1:length(memtrialtypes)
+        sm = sm + 1;
+        Combos(sm).subject = subjects{s};
+        Combos(sm).memtrialtype = memtrialtypes{m};
+    end
+end
+
 % the current subject to be run on this iteration
-subject     = subjects{iteration};
+subject      = Combos(iteration).subject;
+memtrialtype = Combos(iteration).memtrialtype;
 
 %% Set analysis parameters
 
@@ -42,7 +59,7 @@ retrieval_STM_path = fullfile(glm_path, 'SingleTrialModel', subject, 'SPM.mat:be
 
 % Output path. Directory where we are going to save the results. For now,
 % we will put it in `glm_path` in a subject subfolder
-output_path    = fullfile(glm_path, 'ERS_results_gist');
+output_path    = fullfile(glm_path, 'ERS_results_full');
 
 % create the output path if it doesn't already exist
 if ~exist(output_path, 'dir')
@@ -61,9 +78,33 @@ else
     ds_ret = varargin{2};
 end
 
-% slice the retrieval dataset. We want to start by **only looking at
-% targets**
-ds_ret = cosmo_slice(ds_ret, ~cellfun(@isempty, strfind(ds_ret.sa.labels, 'trialtype-target'))); % only targets
+% slice the retrieval dataset. We want to drop unrelated lures, since they
+% do not have a "gist" pattern at encoding, by definition
+ds_ret = cosmo_slice(ds_ret, cellfun(@isempty, strfind(ds_ret.sa.labels, 'trialtype-unrelatedLure'))); % NOT unrelatedLure
+
+% slice up the retrieval dataset so that it only contains the memory trial
+% type of interest for this particular iteration.
+switch memtrialtype
+    case 'RecHits'
+        filter = ~cellfun(@isempty, strfind(ds_ret.sa.labels, 'trialtype-target'));
+        filter = filter & ~cellfun(@isempty, strfind(ds_ret.sa.labels, 'response-remember'));
+    case 'FamHits'
+        filter = ~cellfun(@isempty, strfind(ds_ret.sa.labels, 'trialtype-target'));
+        filter = filter & ~cellfun(@isempty, strfind(ds_ret.sa.labels, 'response-familiar'));
+    case 'Misses'
+        filter = ~cellfun(@isempty, strfind(ds_ret.sa.labels, 'trialtype-target'));
+        filter = filter & ~cellfun(@isempty, strfind(ds_ret.sa.labels, 'response-new'));
+    case 'RelRecFAs'
+        filter = ~cellfun(@isempty, strfind(ds_ret.sa.labels, 'trialtype-relatedLure'));
+        filter = filter & ~cellfun(@isempty, strfind(ds_ret.sa.labels, 'response-remember'));
+    case 'RelFamFAs'
+        filter = ~cellfun(@isempty, strfind(ds_ret.sa.labels, 'trialtype-relatedLure'));
+        filter = filter & ~cellfun(@isempty, strfind(ds_ret.sa.labels, 'response-familiar'));
+    case 'RelCRs'
+        filter = ~cellfun(@isempty, strfind(ds_ret.sa.labels, 'trialtype-relatedLure'));
+        filter = filter & ~cellfun(@isempty, strfind(ds_ret.sa.labels, 'response-new'));
+end
+ds_ret = cosmo_slice(ds_ret, filter);
 
 % add a chunks field to both datasets
 ds_enc.sa.chunks = ones(size(ds_enc.samples, 1), 1);
@@ -104,7 +145,7 @@ cosmo_check_dataset(ds_stacked);
 template_matrix = create_custom_template_matrix(ds_enc, ds_ret);
 template_matrix = template_matrix / length(find(template_matrix)); 
 
-% Use kyle's correlation__summary_measure.
+% Use kyle's correlation_summary_measure.
 % This measure returns a summary value which is the sum of the weighted 
 % correlation matrix. Also need to define a post correlation function
 % and the type of correlation to use. See correlation_summary_measure.m
@@ -121,7 +162,7 @@ nbrhood=cosmo_spherical_neighborhood(ds_stacked,'radius',radius);
 corr_results=cosmo_searchlight(ds_stacked, nbrhood, measure, args);
 
 % Define output location
-outfilename = sprintf('sub-%s_ers_searchight.nii', subject);
+outfilename = sprintf('sub-%s_memtrialtype-%s_gist-searchight.nii', subject, memtrialtype);
 outputfile  = fullfile(output_path, outfilename);
 
 % Store results to disc
