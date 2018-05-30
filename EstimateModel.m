@@ -16,11 +16,11 @@ addpath(genpath('/gpfs/group/nad12/default/nad12/spm12'))
 % current analysis is in, and the directoy which houses the behavioral
 % data.
 
-Analysis.name = 'GistEncodingModel2';
-Analysis.dir  = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models', Analysis.name);
+Analysis.name = 'SingleTrialModel';
+Analysis.dir  = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models/unsmoothed', Analysis.name);
 
-Func.dir         = '/gpfs/group/nad12/default/nad12/FAME8/Func_enc';
-Func.wildcard    = '^swa.*\.img';
+Func.dir         = '/gpfs/scratch/kak53/Func_ret';
+Func.wildcard    = '^rrun.*\.nii';
 Func.motwildcard = '^rp_.*\.txt';
 
 Mask.on   = 0;
@@ -103,7 +103,7 @@ for curSub = number
     for i = 1:NumOfRuns
         fprintf('Run: %d\n', i)
         curFuncDir              = fullfile(Func.dir, Subjects{curSub}, Runs{i});
-        Model.runs{i}.scans     = cellstr(spm_select('FPList', curFuncDir, Func.wildcard));
+        Model.runs{i}.scans     = cellstr(spm_select('ExtFPList', curFuncDir, Func.wildcard, Inf));
         Model.runs{i}.multicond = fullfile(Model.directory, SpecModelMats{i});        % from Model Spec
         Model.runs{i}.motion    = spm_select('FPList', curFuncDir, Func.motwildcard); % from realignment
     end
