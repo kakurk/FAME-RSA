@@ -47,15 +47,15 @@ memtrialtype = Combos(iteration).memtrialtype;
 
 % GLM models path. Full path to the directory containing the FAME general
 % linear models (GLMs).
-glm_path = '/gpfs/group/nad12/default/nad12/FAME8/RSA/models';
+glm_path = '/gpfs/group/nad12/default/nad12/FAME8/RSA/models/unsmoothed';
 
 % Encoding Single Trial Model (STM) path. Full path to this subject's 
 % single trial encoding model.
-encoding_STM_path  = fullfile(glm_path, 'GistEncodingModel2', subject, 'SPM.mat:beta');
+encoding_STM_path  = fullfile(glm_path, 'GistEncodingModel2', subject, 'SPM.mat:spm');
 
 % Retrieval Single Trial Model (STM) path. Full path to this subject's
 % single trial retrieval model.
-retrieval_STM_path = fullfile(glm_path, 'SingleTrialModel', subject, 'SPM.mat:beta');
+retrieval_STM_path = fullfile(glm_path, 'SingleTrialModel', subject, 'SPM.mat:spm');
 
 % Output path. Directory where we are going to save the results. For now,
 % we will put it in `glm_path` in a subject subfolder
