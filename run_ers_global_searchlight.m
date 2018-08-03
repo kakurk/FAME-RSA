@@ -59,7 +59,7 @@ retrieval_STM_path = fullfile(glm_path, 'SingleTrialModel', subject, 'SPM.mat:sp
 
 % Output path. Directory where we are going to save the results. For now,
 % we will put it in `glm_path` in a subject subfolder
-output_path    = fullfile(glm_path, 'ERS_results_full');
+output_path    = fullfile(glm_path, 'ERS_results_full_unsmoothed');
 
 % create the output path if it doesn't already exist
 if ~exist(output_path, 'dir')
@@ -90,6 +90,10 @@ new_response_Filt      = ~cellfun(@isempty, regexp(ds_ret.sa.labels, 'new')); % 
 % add a chunks field to both datasets
 ds_enc.sa.chunks = ones(size(ds_enc.samples, 1), 1);
 ds_ret.sa.chunks = repmat(2, size(ds_ret.samples, 1), 1);
+
+% round the .sa.a.vol.mat field
+ds_enc.a.vol.mat = round(ds_enc.a.vol.mat, 4);
+ds_ret.a.vol.mat = round(ds_ret.a.vol.mat, 4);
 
 % stack the datasets
 ds_stacked = cosmo_stack({ds_enc ds_ret});

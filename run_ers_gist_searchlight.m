@@ -59,7 +59,7 @@ retrieval_STM_path = fullfile(glm_path, 'SingleTrialModel', subject, 'SPM.mat:sp
 
 % Output path. Directory where we are going to save the results. For now,
 % we will put it in `glm_path` in a subject subfolder
-output_path    = fullfile(glm_path, 'ERS_results_full');
+output_path    = fullfile(glm_path, 'ERS_results_full_unsmoothed');
 
 % create the output path if it doesn't already exist
 if ~exist(output_path, 'dir')
@@ -114,7 +114,7 @@ ds_ret.sa.chunks = repmat(2, size(ds_ret.samples, 1), 1);
 % so that they match up nicely.
 
     % encoding
-    ds_enc.sa.visual_categories = cellfun(@(x) x{:}, regexp(ds_enc.sa.labels, '(?<=visual_category-).*(?=*)', 'match'), 'UniformOutput', false);
+    ds_enc.sa.visual_categories = cellfun(@(x) x{:}, regexp(ds_enc.sa.labels, '(?<=visual_category-).*', 'match'), 'UniformOutput', false);
     [~, I]                      = sort(ds_enc.sa.visual_categories);
     ds_enc.sa.visual_categories = ds_enc.sa.visual_categories(I);
     ds_enc.sa.chunks            = ds_enc.sa.chunks(I);
@@ -131,6 +131,10 @@ ds_ret.sa.chunks = repmat(2, size(ds_ret.samples, 1), 1);
     ds_ret.sa.labels            = ds_ret.sa.labels(I);
     ds_ret.samples              = ds_ret.samples(I, :);
 
+% round the .sa.a.vol.mat field
+ds_enc.a.vol.mat = round(ds_enc.a.vol.mat, 4);
+ds_ret.a.vol.mat = round(ds_ret.a.vol.mat, 4);
+    
 % stack the datasets
 ds_stacked = cosmo_stack({ds_enc ds_ret});
 
@@ -177,7 +181,7 @@ function contrast_matrix = create_custom_template_matrix(ds_enc, ds_ret)
     enc_labels     = ds_enc.sa.labels;
 
     % extract the encoding categories
-    enc_categories = cellfun(@(x) x{:}, regexp(enc_labels, '(?<=visual_category-).*(?=*)', 'match'), 'UniformOutput', false);
+    enc_categories = cellfun(@(x) x{:}, regexp(enc_labels, '(?<=visual_category-).*', 'match'), 'UniformOutput', false);
 
     % extract the retrieval labels
     ret_labels     = ds_ret.sa.labels;
