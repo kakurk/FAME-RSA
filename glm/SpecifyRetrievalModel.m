@@ -1,4 +1,4 @@
-function [] = SpecifyModel()
+function [] = SpecifyRetrievalModel()
 % SpecifyModel      function designed to build multiple conditions files
 %                   for later use with SPM's matlabbatch system
 %
