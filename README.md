@@ -3,66 +3,30 @@ Home of the FAME RSA Analysis for the PSU CAN Lab
 
 **rootdir** = `/gpfs/group/nad12/default/nad12/FAME8/RSA`
 
-## Step 1: Model Specification
+## preprocess
 
-### Scripts
+Subdirectory holding preprocessing scripts. In order to run our multivariate analyses, we need to grab the unsmoothed, non-normalized functional images.
 
-- `SpecifyModel.m`
+`wildcard_preprocess.m` = batch preprocessing script from [KyleSPMToolbox](https://github.com/kkurkela/KyleSPMToolbox). The scripts reads in the raw data that @kkurkela transfered over to his scratch directory and runs a full preprocessing pipeline on it.
 
-### Directories  
+`wildcard_parameters12.m` = the parameters used for preprocessing. Realignment (SPM12 defaults) --> Slicetiming --> Coregistration (SPM12 defaults) --> Segmentation (SPM12 defaults) --> Normalization (SPM12 defaults) --> Smoothing (6mm FWHM).
 
-- `rootdir/model/`
+## glm
 
-### Files  
+Subdirectory holding general linear modeling (glm) scripts. In order to run our multivariate analyses, we need to run Least Square- All (LSA) single trial models in order to get an estimate of the BOLD activation pattern elicited for each trial at encoding and retreival. 
+ 
+`SpecifyRetrievalModel.m` = a heavily modified version of the `SpecifyModel.m` script from [KyleSPMToolbox](https://github.com/kkurkela/KyleSPMToolbox), this scripts directly creates a LSA single trial model for _Retrieval_. Each trial is input as a seperate trial type, given a descriptive name detailing all of the information for that trial. For example:  
+ 
+`imagename-backpack(1)_visualcategory-backpack_response-remember_trialtype-target_enctype-scrambled`  
 
-Run multiple_condition files (see the [spm manual](http://www.fil.ion.ucl.ac.uk/spm/doc/manual.pdf) for more information)
+Given these trial type names, we should be able to determine which trial type this trial would fall into (A RecHit backpack from the scrambled condition).  
+ 
+`SpecifyEncodingModel.m` = a heavily modified version of the `SpecifyModel.m` script from [KyleSPMToolbox](https://github.com/kkurkela/KyleSPMToolbox), this scripts directly creates a LSA single trial model for _Encoding_. Each trial is input as a seperate trial type, given a descriptive name detailing all of the information for that trial. For example: 
+ 
+`imagename-backpack(1)_visualcategory-backpack_response-pleasent_gistPosition-1_enctype-scrambled`
+ 
+Given these trial type names, we should be able to determine which trial type this trial would fall into (e.g., a backpack from the scrambled condition that was presented first and was labeled as pleasent).    
+ 
+`SpecifyGistEncModel2.m` = a heavily modified version of the `SpecifyModel.m` script from [KyleSPMToolbox](https://github.com/kkurkela/KyleSPMToolbox), this scripts created a special "gist" model at encoding. The gist model consists of a trial type for each visualcategory, in order to estimate the "gist" neural pattern from encoding for, for example, backpacks. We are left with 93 regressors; once for each visual category in the experiment.
 
-- `rootdir/model/subID/Run#_multiple_conditions.mat`
-
-## Step 2: Model Estimation
-
-### Scripts
-
-- `EstimateModel.m`
-
-### Directories  
-
-- `rootdir/model/`
-
-### Files Created
-
-1. `SPM.mat`: the file that defines the current model. See information on this data structure [here](http://people.duke.edu/~njs28/spmdatastructure.htm) and [here](http://andysbrainblog.blogspot.com/2013/10/whats-in-spmmat-file.html)
-2. `beta_*.nii`: 3-d brain image for each regressor in the model
-3. `job.mat`: file that defines the SPM job used to estimate the model. You can look at this file in the SPM batch editor
-4. `mask.nii`: 3-d brain image that defines where in 3-d space the model was esimated
-5. `ResMS.nii`: Residual error left over from the model
-6. `RPV.nii`:
-
-## Step 3: Pattern Similarity Analysis (PSA)
-
-### Scripts
-
-- `run_rsa.m`
-
-### Directories  
-
-- `rootdir/model/subID`
-
-### Files Created
-
-1. `subID_roiID_rho_matrix.csv`: the MVPA correlation matrix of every combination of trials. Each column and row represents a trial. The r-value in each cell is the correlation of the voxel pattern at this ROI between those two trials. The higher the r value, the more similar the pattern is.  
-2. `subID_roiID_rho_matrix.fig`: same as above, just instead a MATLAB figure for visualization.  
-
-## Step 3: Group Level Statistics
-
-### Scripts
-
-- `group_statistics.m`
-
-### Directories
-
-- `rootdir/model/subID`
-
-### Files Created
-
-1.
+`EstimateModel.m` = a slighly modified version of the `EstimateModel.m` script from [KyleSPMToolbox](https://github.com/kkurkela/KyleSPMToolbox), this script takes the multiple condition files from the previous three scripts and estimates them.
