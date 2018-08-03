@@ -1,7 +1,9 @@
 % Normalize the ERS results images
 
+addpath(genpath('/gpfs/group/nad12/default/nad12/spm12'))
+
 anatdir    = '/storage/home/kak53/scratch/Anat_enc';
-rsadir     = '/gpfs/group/nad12/default/nad12/FAME8/RSA/models/ERS_results_full_unsmoothed';
+rsadir     = '/gpfs/group/nad12/default/nad12/FAME8/RSA/models/unsmoothed/ERS_results_full_unsmoothed';
 
 ya_subjects = {'18y404'  '20y297'  '20y415'  '20y441'  '20y455' ...
                '21y437'  '21y534'  '23y452'  '25y543'  '18y566' ...
@@ -15,12 +17,27 @@ oa_subjects = {'67o136' '67o153' '67o178' '69o144' '69o277' '70o118' '70o316' '7
 subjects    = horzcat(ya_subjects, oa_subjects);
 
 nrun = length(subjects); % enter the number of runs here
-jobfile = {'/Users/kylekurkela/Documents/MATLAB/githubrepos/experiments/normalize_job.m'};
+jobfile = {'/gpfs/group/nad12/default/nad12/FAME8/RSA/updated-scripts/normalize_job.m'};
 jobs = repmat(jobfile, 1, nrun);
 inputs = cell(2, nrun);
 for crun = 1:nrun
-    inputs{1, crun} = cellstr(spm_select('FPListRec', fullfile(anatdir, subjects{crub}), '^T1MprageAxial.img')); % Segment: Volumes - cfg_files
-    inputs{2, crun} = cellstr(spm_select('FPListRec', rsadir, sprintf('^sub-%s.*', subjects{crun}))); % Normalise: Write: Images to Write - cfg_files
+    anat = spm_select('FPListRec', fullfile(anatdir, subjects{crun}), '^T1MprageAxial.img');
+    if size(anat, 1) == 2
+        anat = anat(1,:);
+    end
+    fprintf('%s\n\n', anat)
+    inputs{1, crun} = cellstr(anat); % Segment: Volumes - cfg_files
+    ers = spm_select('FPListRec', rsadir, sprintf('^sub-%s.*gist', subjects{crun}));
+    inputs{2, crun} = cellstr(ers); % Normalise: Write: Images to Write - cfg_files
 end
+
+% remove empty
+
+inputs = inputs(:, ~cellfun(@isempty, cellfun(@char, inputs(1,:), 'UniformOutput', false)));
+jobs   = jobs(~cellfun(@isempty, cellfun(@char, inputs(1,:), 'UniformOutput', false)));
+
+inputs = inputs(:, ~cellfun(@isempty, cellfun(@char, inputs(2,:), 'UniformOutput', false)));
+jobs   = jobs(~cellfun(@isempty, cellfun(@char, inputs(2,:), 'UniformOutput', false)));
+
 spm('defaults', 'FMRI');
 spm_jobman('run', jobs, inputs{:});
