@@ -16,10 +16,10 @@ addpath(genpath('/gpfs/group/nad12/default/nad12/spm12'))
 % current analysis is in, and the directoy which houses the behavioral
 % data.
 
-Analysis.name = 'SingleTrialModel';
+Analysis.name = 'GistEncodingModel2';
 Analysis.dir  = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models/unsmoothed', Analysis.name);
 
-Func.dir         = '/gpfs/scratch/kak53/Func_ret';
+Func.dir         = '/gpfs/scratch/kak53/Func_enc';
 Func.wildcard    = '^rrun.*\.nii';
 Func.motwildcard = '^rp_.*\.txt';
 
@@ -37,6 +37,7 @@ Subjects       = { '18y404'  '20y297'  '20y415'  '20y441'  '20y455' ...
                    '22y422'  '23y546' '67o136' '67o153' '67o178' '69o144' '69o277' '70o118' '70o316' '71o152' ...
                    '71o193' '72o164' '73o165' '75o320' '76o120' '76o162' '78o113' '79o108' ...
                    '79o117' '79o279' '80o121' '80o128' '81o125' '81o312' '83o197'}';
+%Subjects = {'23y452' '69o144' '69o277' '70o118'}';
 
 % Please list the runs for the model in a 1 x N cell array.
 

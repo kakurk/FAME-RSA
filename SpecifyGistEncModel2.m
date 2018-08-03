@@ -1,4 +1,4 @@
-function [] = SpecifyGistEncModel2(i)
+function [] = SpecifyGistEncModel2(~)
 % SpecifyModel      function designed to build multiple conditions files
 %                   for later use with SPM's matlabbatch system
 %
@@ -29,7 +29,7 @@ function [] = SpecifyGistEncModel2(i)
 % data.
 
 Analysis.name             = 'GistEncodingModel2';
-Analysis.directory        = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models', Analysis.name);
+Analysis.directory        = fullfile('/gpfs/group/nad12/default/nad12/FAME8/RSA/models/unsmoothed/', Analysis.name);
 Analysis.behav.directory  = '/gpfs/group/nad12/default/nad12/FAME8/Behav';
  
 
@@ -65,7 +65,7 @@ fprintf('\n')
 
 % for each subject...
 
-for indexS = i%1:length(Subjects)
+for indexS = 1:length(Subjects)
     
     %-- Build Path to this Subject's Behavioral Data
     % This section builds a path to the current subjects behavioral
